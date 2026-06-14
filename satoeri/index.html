@@ -169,11 +169,12 @@
       <!-- ⑧ 映像書庫ステージ -->
       <section id="stage-section-8" class="stage-container hidden fade-in w-full h-full p-4">
         <div class="bg-white rounded-3xl p-5 border-4 border-[#5d4037] shadow-lg text-center w-full z-10">
-          <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-2 border-stone-300 bg-stone-100">
-            <!-- 映像書庫背景画像 (object-cover から object-contain に修正) -->
-            <img id="image-library" src="" alt="映像書庫マップ" class="w-full h-full object-contain">
+          <!-- 親要素に w-full h-auto を指定して画像の自然なアスペクト比に完全に追従させる -->
+          <div class="relative w-full h-auto rounded-2xl overflow-hidden border-2 border-stone-300 bg-stone-100 flex items-center justify-center">
+            <!-- 映像書庫背景画像（w-full h-auto block により、一切の左右見切れを防ぎ、スマホ画面へアスペクト比を保って完全追従） -->
+            <img id="image-library" src="" alt="映像書庫マップ" class="w-full h-auto block mx-auto">
             
-            <!-- 透明クリックエリアの精密配置 -->
+            <!-- 透明クリックエリアの精密配置（画像アスペクト比に同期しているため比率ずれが絶対に起きません） -->
             <!-- ① お客様の声 (左上の紫色の本) -->
             <a id="link-voice" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 8%; left: 8%; width: 28%; height: 35%;" title="お客様の声"></a>
             
@@ -198,11 +199,12 @@
       <!-- ⑨ 最後の選択ステージ -->
       <section id="stage-section-9" class="stage-container hidden fade-in w-full h-full p-4">
         <div class="bg-white rounded-3xl p-5 border-4 border-[#5d4037] shadow-lg text-center w-full z-10">
-          <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-2 border-stone-300 bg-stone-100">
-            <!-- 最後の選択背景画像 (object-cover から object-contain に修正) -->
-            <img id="image-future" src="" alt="最後の未来選択マップ" class="w-full h-full object-contain">
+          <!-- 親要素に w-full h-auto を指定して画像の自然なアスペクト比に完全に追従させる -->
+          <div class="relative w-full h-auto rounded-2xl overflow-hidden border-2 border-stone-300 bg-stone-100 flex items-center justify-center">
+            <!-- 最後の選択背景画像（w-full h-auto block により、一切の左右見切れを防ぎ、スマホ画面へアスペクト比を保って完全追従） -->
+            <img id="image-future" src="" alt="最後の未来選択マップ" class="w-full h-auto block mx-auto">
             
-            <!-- 透明クリックエリアの精密配置 -->
+            <!-- 透明クリックエリアの精密配置（画像アスペクト比に同期しているため比率ずれが絶対に起きません） -->
             <!-- ① 動くキャラ作成 (中央の巻物内の上のボタン) -->
             <a id="link-character" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 45%; left: 26%; width: 34%; height: 11%;" title="動くキャラ作成"></a>
             
