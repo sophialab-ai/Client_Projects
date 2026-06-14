@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>売り込まずに伝わる冒険 - 冒険の旅</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght=500;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      background-color: #f7f3e9;
+      font-family: 'Zen Maru Gothic', sans-serif;
+    }
+    /* 冒険ファンタジー風の3D風ボタンシャドウ */
+    .btn-adventure {
+      box-shadow: 0 6px 0 #4a2c11;
+      transition: all 0.1s ease;
+    }
+    .btn-adventure:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #4a2c11;
+    }
+    /* ファンタジー風グラデーション背景 */
+    .bg-fantasy {
+      background: linear-gradient(135deg, #fffcf0 0%, #fbf3db 100%);
+    }
+    /* 進行状況バーのグラデーション */
+    .progress-gradient {
+      background: linear-gradient(90deg, #e0a96d 0%, #d48c46 100%);
+    }
+    /* スムーズなフェードイン */
+    .fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* 動画背景フェードアウトアニメーション用 */
+    .video-overlay-active {
+      transition: all 1s ease-in-out;
+    }
+  </style>
+</head>
+<body class="text-stone-800 antialiased font-medium">
+
+  <div id="app" class="max-w-md mx-auto min-h-screen bg-[#fdfbf7] flex flex-col justify-between shadow-2xl border-x border-stone-200">
+    
+    <header class="p-4 bg-white border-b border-stone-100 flex flex-col items-center z-10">
+      <div id="logo-container" class="w-full flex justify-center">
+        <img id="app-logo" src="" alt="アトリエロゴ" class="h-12 object-contain error-fallback" onerror="this.style.display='none'; document.getElementById('logo-placeholder').style.display='block';">
+        <div id="logo-placeholder" class="hidden text-center">
+          <span class="text-xs tracking-widest text-stone-400 block font-bold">ATELIER ADVENTURE</span>
+          <span class="text-sm font-black text-[#5d4037]">売り込まずに伝わる冒険</span>
+        </div>
+      </div>
+      
+      <div class="w-full mt-3">
+        <div class="flex justify-between text-xs font-bold text-stone-500 mb-1">
+          <span id="stage-badge" class="bg-amber-100 text-[#5d4037] px-2 py-0.5 rounded-full">ステージ 1/9</span>
+          <span id="stage-name">オープニング</span>
+        </div>
+        <div class="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+          <div id="progress-bar" class="progress-gradient h-full w-1/9 transition-all duration-500"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-grow flex flex-col justify-center relative overflow-hidden">
+      
+      <!-- ① オープニングステージ (全画面動画再生仕様) -->
+      <section id="stage-section-1" class="stage-container fade-in w-full h-full min-h-[500px] flex flex-col justify-between relative p-4">
+        <!-- 全画面動画コンテナ -->
+        <div class="absolute inset-0 bg-black overflow-hidden z-0">
+          <video id="video-1" class="w-full h-full object-contain" playsinline controls>
+          </video>
+          <button onclick="skipVideo(1)" class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-md hover:bg-black/80 font-bold transition z-30">
+            ⏭️ 動画をスキップ
+          </button>
+        </div>
+      </section>
+
+      <!-- ②〜⑤ 質問ステージテンプレート (全画面動画背景仕様) -->
+      <section id="stage-section-question" class="stage-container hidden fade-in w-full h-full min-h-[500px] flex flex-col justify-between relative p-4">
+        
+        <!-- 全画面動画背景用コンテナ -->
+        <div class="absolute inset-0 bg-black overflow-hidden z-0">
+          <video id="question-video" class="w-full h-full object-contain" playsinline controls>
+          </video>
+          <!-- テスト用スキップ（動画上に常に浮かぶ） -->
+          <button id="btn-skip-question-video" class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-md hover:bg-black/80 font-bold transition z-30">
+            ⏭️ 動画をスキップ
+          </button>
+        </div>
+
+        <!-- 質問エリア & 回答ボタン (動画終了後に、スライドアップで浮かび上がる) -->
+        <div id="interaction-area" class="hidden w-full bg-white/95 backdrop-blur-sm rounded-3xl p-5 border-4 border-[#5d4037] shadow-2xl z-20 animate-fade-in relative mt-auto mb-4">
+          <!-- 質問番号インジケーター -->
+          <div id="question-step-indicator" class="text-xs text-amber-700 font-black mb-1 text-center">質問 1 / 3</div>
+          <p id="question-text" class="font-black text-[#5d4037] mb-4 text-base text-center leading-snug"></p>
+          <div id="option-buttons" class="space-y-2.5">
+            <!-- JSで選択肢ボタンを動的生成 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ⑥ 魅力の宝箱ステージ (全画面動画背景仕様 + 終了後の大きな案内パネル) -->
+      <section id="stage-section-6" class="stage-container hidden fade-in w-full h-full min-h-[500px] flex flex-col justify-between relative p-4">
+        
+        <!-- 全画面動画背景用コンテナ -->
+        <div class="absolute inset-0 bg-black overflow-hidden z-0">
+          <video id="video-6" class="w-full h-full object-contain" playsinline controls></video>
+          <button onclick="skipVideo(6)" class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-md hover:bg-black/80 font-bold transition z-30">
+            ⏭️ 動画をスキップ
+          </button>
+        </div>
+
+        <!-- 大きな案内パネル (動画終了後に画面全体をほとんど覆うように表示) -->
+        <div id="next-action-6" class="hidden absolute inset-4 bg-white/98 backdrop-blur-md rounded-3xl p-6 border-4 border-[#5d4037] shadow-2xl z-20 flex flex-col justify-center items-center text-center fade-in">
+          <div class="my-auto space-y-6">
+            <span class="text-5xl block animate-bounce">🎁</span>
+            <h3 class="text-2xl font-black text-[#5d4037]">魅力の宝箱が出現！</h3>
+            <p class="text-[#5d4037] text-base leading-relaxed font-bold px-2">
+              あなたのたくさんの想いと魅力が詰まった宝箱がついに目の前に現れました。<br>さあ、新しい扉を開きましょう！
+            </p>
+          </div>
+          <button onclick="nextStage()" class="btn-adventure w-full bg-amber-500 hover:bg-amber-400 text-white py-4 px-6 rounded-full font-black text-lg text-stone-900 border-2 border-[#5d4037] mt-auto">
+            宝箱を開けて次へ進む！ ✨
+          </button>
+        </div>
+      </section>
+
+      <!-- ⑦ 魅力の秘宝ステージ (全画面動画背景仕様 + 終了後の大きな案内パネル) -->
+      <section id="stage-section-7" class="stage-container hidden fade-in w-full h-full min-h-[500px] flex flex-col justify-between relative p-4">
+        
+        <!-- 全画面動画背景用コンテナ -->
+        <div class="absolute inset-0 bg-black overflow-hidden z-0">
+          <video id="video-7" class="w-full h-full object-contain" playsinline controls></video>
+          <button onclick="skipVideo(7)" class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-md hover:bg-black/80 font-bold transition z-30">
+            ⏭️ 動画をスキップ
+          </button>
+        </div>
+
+        <!-- 大きな案内パネル (動画終了後に画面全体をほとんど覆うように表示) -->
+        <div id="next-action-7" class="hidden absolute inset-4 bg-white/98 backdrop-blur-md rounded-3xl p-6 border-4 border-[#5d4037] shadow-2xl z-20 flex flex-col justify-center items-center text-center fade-in">
+          <div class="my-auto space-y-6">
+            <span class="text-5xl block animate-pulse">✨</span>
+            <h3 class="text-2xl font-black text-amber-700">魅力の秘宝を獲得！</h3>
+            <p class="text-[#5d4037] text-base leading-relaxed font-bold px-2">
+              ついに本当の魅力（秘宝）が輝きを放ちました！<br>この輝きを携えて、これまでの旅路の記録が保管されている映像書庫へと向かいましょう。
+            </p>
+          </div>
+          <button onclick="nextStage()" class="btn-adventure w-full bg-amber-500 hover:bg-amber-400 text-white py-4 px-6 rounded-full font-black text-lg text-stone-900 border-2 border-[#5d4037] mt-auto">
+            秘宝を受け取って映像書庫へ 🏛️
+          </button>
+        </div>
+      </section>
+
+      <!-- ⑧ 映像書庫ステージ -->
+      <section id="stage-section-8" class="stage-container hidden fade-in w-full h-full p-4">
+        <div class="bg-white rounded-3xl p-5 border-4 border-[#5d4037] shadow-lg text-center w-full z-10">
+          <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-2 border-stone-300 bg-stone-100">
+            <!-- 映像書庫背景画像 -->
+            <img id="image-library" src="" alt="映像書庫マップ" class="w-full h-full object-cover">
+            
+            <!-- 透明クリックエリアの精密配置 -->
+            <!-- ① お客様の声 (左上の紫色の本) -->
+            <a id="link-voice" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 8%; left: 8%; width: 28%; height: 35%;" title="お客様の声"></a>
+            
+            <!-- ② サトエリの想い (中央のピンクのリボンの本) -->
+            <a id="link-philosophy" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 10%; left: 38%; width: 26%; height: 48%;" title="サトエリの想い"></a>
+            
+            <!-- ③ 制作事例 (右上の赤色の本) -->
+            <a id="link-cases" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 8%; left: 66%; width: 26%; height: 35%;" title="制作事例"></a>
+            
+            <!-- ④ 制作事例集 (左下の積み重なった本) -->
+            <a id="link-collection" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 55%; left: 16%; width: 28%; height: 38%;" title="制作事例集"></a>
+          </div>
+
+          <div class="mt-5">
+            <button onclick="nextStage()" class="btn-adventure w-full bg-emerald-500 hover:bg-emerald-400 text-white py-3.5 px-6 rounded-full font-black text-base border-2 border-[#5d4037]">
+              最後の選択へ進む 🚀
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ⑨ 最後の選択ステージ -->
+      <section id="stage-section-9" class="stage-container hidden fade-in w-full h-full p-4">
+        <div class="bg-white rounded-3xl p-5 border-4 border-[#5d4037] shadow-lg text-center w-full z-10">
+          <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border-2 border-stone-300 bg-stone-100">
+            <!-- 最後の選択背景画像 -->
+            <img id="image-future" src="" alt="最後の未来選択マップ" class="w-full h-full object-cover">
+            
+            <!-- 透明クリックエリアの精密配置 -->
+            <!-- ① 動くキャラ作成 (中央の巻物内の上のボタン) -->
+            <a id="link-character" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 45%; left: 26%; width: 34%; height: 11%;" title="動くキャラ作成"></a>
+            
+            <!-- ② ムービー制作 (中央の巻物内の下のボタン) -->
+            <a id="link-movie" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 57%; left: 26%; width: 34%; height: 11%;" title="ムービー制作"></a>
+          </div>
+
+          <div class="mt-6 border-t pt-4">
+            <button onclick="restartAdventure()" class="text-stone-500 hover:text-stone-800 font-bold text-xs flex items-center justify-center mx-auto gap-1">
+              🔄 最初からもう一度冒険する
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="p-3 text-center text-[10px] text-stone-400 font-bold border-t border-stone-100 bg-stone-50 z-10">
+      &copy; 売り込まずに伝わる冒険. All Rights Reserved.
+    </footer>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       【超重要】設定データエリア
+       動画・画像ファイル名、質問文、遷移先URLはすべてここで管理されています。
+       後からここを書き換えるだけで、簡単に完成版コンテンツに更新できます。
+       ========================================================================== */
+    const APP_CONFIG = {
+      videos: {
+        opening: "00_opening.mp4",
+        mori: "01_mori.mp4",
+        bridge: "02_bridge.mp4",
+        cave: "03_cave.mp4",
+        maze: "04_maze.mp4",
+        treasure: "05_treasure.mp4",
+        gem: "06_gem.mp4"
+      },
+      images: {
+        library: "07_library.png",
+        future: "08_future.png"
+      },
+
+      // ②〜⑤ステージの「質問と回答」設定
+      questions: {
+        // ② 自己紹介の森
+        mori: {
+          title: "🌲 自己紹介の森",
+          desc: "深い森に迷い込みました。不思議なアバターがあなたの行く手を阻んでいます。まずはあなた自身を伝える「得意な表現」を教えてください。",
+          steps: [
+            {
+              question: "質問①：あなたが自己紹介で一番伝えたいことは？",
+              options: [
+                { text: "どんな仕事をしているか", value: "A" },
+                { text: "なぜその仕事をしているか", value: "B" },
+                { text: "自分の人柄や想い", value: "C" },
+                { text: "実績や経験", value: "D" }
+              ]
+            },
+            {
+              question: "質問②：初対面の人に覚えてもらいたいのは？",
+              options: [
+                { text: "名前", value: "A" },
+                { text: "仕事内容", value: "B" },
+                { text: "人柄", value: "C" },
+                { text: "専門性", value: "D" }
+              ]
+            },
+            {
+              question: "質問③：あなたに合う表現方法は？",
+              options: [
+                { text: "文章", value: "A" },
+                { text: "写真", value: "B" },
+                { text: "イラスト", value: "C" },
+                { text: "動画", value: "D" }
+              ]
+            }
+          ]
+        },
+        // ③ 信頼の吊り橋
+        bridge: {
+          title: "🌉 信頼の吊り橋",
+          desc: "風に揺れる長い吊り橋。一歩ずつ,信頼を築きながら渡りきる必要があります。",
+          steps: [
+            {
+              question: "質問①：あなたが今の仕事を始めたきっかけは？",
+              options: [
+                { text: "好きだったから", value: "A" },
+                { text: "得意だったから", value: "B" },
+                { text: "誰かの役に立ちたかったから", value: "C" },
+                { text: "自分の経験を活かしたかったから", value: "D" }
+              ]
+            },
+            {
+              question: "質問②：お客様に一番伝えたいことは？",
+              options: [
+                { text: "商品やサービスの特徴", value: "A" },
+                { text: "実績", value: "B" },
+                { text: "想い", value: "C" },
+                { text: "将来のビジョン", value: "D" }
+              ]
+            },
+            {
+              question: "質問③：信頼につながると思うのは？",
+              options: [
+                { text: "実績", value: "A" },
+                { text: "資格", value: "B" },
+                { text: "人柄", value: "C" },
+                { text: "ストーリー", value: "D" }
+              ]
+            }
+          ]
+        },
+        // ④ 弱みの洞窟
+        cave: {
+          title: "🕳️ 弱みの洞窟",
+          desc: "薄暗い洞窟。ここは自分の弱みや本音を認めたとき、行く先を照らす光が灯る場所です。",
+          steps: [
+            {
+              question: "質問①：これまでで一番大変だった経験は？",
+              options: [
+                { text: "人間関係", value: "A" },
+                { text: "仕事", value: "B" },
+                { text: "挑戦と失敗", value: "C" },
+                { text: "自信を失った経験", value: "D" }
+              ]
+            },
+            {
+              question: "質問②：その経験から得たものは？",
+              options: [
+                { text: "強さ", value: "A" },
+                { text: "優しさ", value: "B" },
+                { text: "行動力", value: "C" },
+                { text: "共感力", value: "D" }
+              ]
+            },
+            {
+              question: "質問③：今の仕事に活かされていると思うのは？",
+              options: [
+                { text: "失敗経験", value: "A" },
+                { text: "成功経験", value: "B" },
+                { text: "人との出会い", value: "C" },
+                { text: "学び続けたこと", value: "D" }
+              ]
+            }
+          ]
+        },
+        // ⑤ 紹介の迷宮
+        maze: {
+          title: "🧭 紹介の迷宮",
+          desc: "鏡だらけの不思議な迷宮。本当のお客さまの姿を見つけ出すことで、迷宮を突破できます。",
+          steps: [
+            {
+              question: "質問①：自己紹介のあと困ることは？",
+              options: [
+                { text: "会話が続かない", value: "A" },
+                { text: "印象に残らない", value: "B" },
+                { text: "何を紹介すればいいかわからない", value: "C" },
+                { text: "紹介につながらない", value: "D" }
+              ]
+            },
+            {
+              question: "質問②：理想の紹介は？",
+              options: [
+                { text: "名前を覚えてもらう", value: "A" },
+                { text: "人柄を覚えてもらう", value: "B" },
+                { text: "仕事を理解してもらう", value: "C" },
+                { text: "紹介したくなる人になってもらう", value: "D" }
+              ]
+            },
+            {
+              question: "質問③：もしあなた専用 of 紹介ツールがあったら？",
+              options: [
+                { text: "名刺代わりに使いたい", value: "A" },
+                { text: "商談前に見てもらいたい", value: "B" },
+                { text: "SNSで紹介したい", value: "C" },
+                { text: "交流会で活用したい", value: "D" }
+              ]
+            }
+          ]
+        }
+      },
+
+      // ⑧・⑨ステージに配置するリンクボタンの遷移先URL設定
+      links: {
+        // ⑧ 映像書庫用
+        customerVoice: "https://oekaki-movie.co.jp/voice/1627/", // お客様の声URL
+        satoeriPhilosophy: "https://youtu.be/vcp-_vXmkmg", // サトエリの想いURL
+        caseStudies: "https://youtu.be/7zFt0v6efxg",             // 制作事例URL
+        caseCollection: "https://satoeri-oekaki.com/",     // 制作事例集URL
+        
+        // ⑨ 最後の選択用
+        createCharacter: "https://forms.gle/5Gn6zbyZpa3WVctg9", // 動くキャラ作成URL
+        createMovie: "https://docs.google.com/forms/d/e/1FAIpQLSf5wYHc3U-NIm8v73kkv-vThrmmTDVvOAZLNV-95EOJ06BK9Q/viewform"          // ムービー制作URL
+      }
+    };
+
+
+    /* ==========================================================================
+       ロジック制御エリア
+       ========================================================================== */
+    
+    // ユーザーの回答を記録する配列
+    const userAnswers = {
+      mori: [null, null, null],
+      bridge: [null, null, null],
+      cave: [null, null, null],
+      maze: [null, null, null]
+    };
+
+    // 現在のステージ番号 (1〜9)
+    let currentStageNum = 1;
+
+    // 現在の質問インデックス (0〜2)
+    let currentQuestionIdx = 0;
+
+    // 起動時に初期セットアップを実行
+    window.onload = function() {
+      setupAssets();
+      showStage(1);
+    };
+
+    // 設定データから画像や動画リンク、各ボタンにURLをバインド
+    function setupAssets() {
+      // ロゴ画像
+      if(APP_CONFIG.images.logo) {
+        document.getElementById('app-logo').src = APP_CONFIG.images.logo;
+      }
+      
+      // 各動画ソース
+      document.getElementById('video-1').src = APP_CONFIG.videos.opening;
+      document.getElementById('video-6').src = APP_CONFIG.videos.treasure;
+      document.getElementById('video-7').src = APP_CONFIG.videos.gem;
+
+      // ⑧ 映像書庫用の画像とリンク
+      document.getElementById('image-library').src = APP_CONFIG.images.library;
+      document.getElementById('link-voice').href = APP_CONFIG.links.customerVoice;
+      document.getElementById('link-philosophy').href = APP_CONFIG.links.satoeriPhilosophy;
+      document.getElementById('link-cases').href = APP_CONFIG.links.caseStudies;
+      document.getElementById('link-collection').href = APP_CONFIG.links.caseCollection;
+
+      // ⑨ 最後の選択用の画像とリンク
+      document.getElementById('image-future').src = APP_CONFIG.images.future;
+      document.getElementById('link-character').href = APP_CONFIG.links.createCharacter;
+      document.getElementById('link-movie').href = APP_CONFIG.links.createMovie;
+
+      // HTML5 videoのended(再生終了)イベントを設定
+      setupVideoListeners();
+    }
+
+    // 動画終了を検知して自動で次のアクション、または次のステージに進める処理
+    function setupVideoListeners() {
+      // ① オープニング動画が終了したら自動でステージ2へ
+      document.getElementById('video-1').addEventListener('ended', function() {
+        nextStage();
+      });
+
+      // 質問ステージの動画が終了したら質問を出現させる
+      document.getElementById('question-video').addEventListener('ended', function() {
+        showQuestionInteraction();
+      });
+
+      // ⑥ 魅力の宝箱動画が終了したら「次へ進む」ボタン表示
+      document.getElementById('video-6').addEventListener('ended', function() {
+        document.getElementById('next-action-6').classList.remove('hidden');
+      });
+
+      // ⑦ 魅力の秘宝動画が終了したら「次へ進む」ボタン表示
+      document.getElementById('video-7').addEventListener('ended', function() {
+        document.getElementById('next-action-7').classList.remove('hidden');
+      });
+    }
+
+    // デバッグ・動作テスト用に動画再生を強制スキップさせる補助メソッド
+    function skipVideo(stageId) {
+      if (stageId === 1) {
+        document.getElementById('video-1').pause();
+        nextStage();
+      } else if (stageId === 'question') {
+        document.getElementById('question-video').pause();
+        showQuestionInteraction();
+      } else if (stageId === 6) {
+        document.getElementById('video-6').pause();
+        document.getElementById('next-action-6').classList.remove('hidden');
+      } else if (stageId === 7) {
+        document.getElementById('video-7').pause();
+        document.getElementById('next-action-7').classList.remove('hidden');
+      }
+    }
+
+    // 各ステージで、3つの質問を段階的にレンダーするための関数
+    function renderQuestionStep(qKey) {
+      const qData = APP_CONFIG.questions[qKey];
+      const stepData = qData.steps[currentQuestionIdx];
+
+      // 質問番号表示
+      document.getElementById('question-step-indicator').textContent = `質問 ${currentQuestionIdx + 1} / 3`;
+      // 質問テキスト設定
+      document.getElementById('question-text').textContent = stepData.question;
+
+      // 選択肢ボタンの動的生成
+      const optContainer = document.getElementById('option-buttons');
+      optContainer.innerHTML = ''; // クリア
+
+      stepData.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left bg-white hover:bg-amber-50 active:bg-amber-100 text-[#5d4037] p-2.5 rounded-xl border-2 border-stone-300 font-bold shadow-sm transition hover:border-[#5d4037] text-sm";
+        btn.innerHTML = `<span class="inline-block bg-[#5d4037] text-white rounded-full w-5.5 h-5.5 text-center text-xs leading-5.5 mr-2 font-black">${opt.value}</span>${opt.text}`;
+        btn.onclick = function() {
+          // 回答の記録
+          userAnswers[qKey][currentQuestionIdx] = opt.value;
+          
+          // 3問中、次の質問がある場合は進め、ない場合は次のステージへ
+          if (currentQuestionIdx < 2) {
+            currentQuestionIdx++;
+            renderQuestionStep(qKey);
+          } else {
+            nextStage();
+          }
+        };
+        optContainer.appendChild(btn);
+      });
+    }
+
+    // 指定ステージの画面を表示状態にする
+    function showStage(stageNum) {
+      currentStageNum = stageNum;
+      
+      // 全ステージ要素を隠す
+      document.querySelectorAll('.stage-container').forEach(el => el.classList.add('hidden'));
+
+      // ヘッダー情報と進行状況バーの更新
+      updateProgress(stageNum);
+
+      if (stageNum === 1) {
+        // ① オープニング
+        document.getElementById('stage-section-1').classList.remove('hidden');
+        playVideoSafe('video-1');
+
+      } else if (stageNum >= 2 && stageNum <= 5) {
+        // ②〜⑤ 質問ステージ (共通コンポーネント)
+        const qSection = document.getElementById('stage-section-question');
+        qSection.classList.remove('hidden');
+
+        // 表示する質問内容のキーマッピング
+        let qKey = 'mori';
+        if (stageNum === 3) qKey = 'bridge';
+        if (stageNum === 4) qKey = 'cave';
+        if (stageNum === 5) qKey = 'maze';
+
+        // 各質問ステージ開始時に、質問進行インデックスを0（1問目）にリセット
+        currentQuestionIdx = 0;
+
+        // ビデオ要素のソース書き換えとリロード
+        const qVideo = document.getElementById('question-video');
+        qVideo.src = APP_CONFIG.videos[qKey];
+        qVideo.load();
+        
+        // 各種状態初期化 (動画再生中表示・全画面背景演出)
+        document.getElementById('interaction-area').classList.add('hidden');
+        qVideo.classList.remove('opacity-40');
+
+        // スキップボタンの引数を設定
+        document.getElementById('btn-skip-question-video').onclick = function() {
+          skipVideo('question');
+        };
+
+        // 1問目のデータを流し込み
+        renderQuestionStep(qKey);
+
+        // ビデオ再生開始
+        playVideoSafe('question-video');
+
+      } else if (stageNum === 6) {
+        // ⑥ 魅力の宝箱
+        document.getElementById('stage-section-6').classList.remove('hidden');
+        document.getElementById('next-action-6').classList.add('hidden');
+        document.getElementById('video-6').classList.remove('opacity-40');
+        playVideoSafe('video-6');
+
+      } else if (stageNum === 7) {
+        // ⑦ 魅力の秘宝
+        document.getElementById('stage-section-7').classList.remove('hidden');
+        document.getElementById('next-action-7').classList.add('hidden');
+        document.getElementById('video-7').classList.remove('opacity-40');
+        playVideoSafe('video-7');
+
+      } else if (stageNum === 8) {
+        // ⑧ 映像書庫
+        document.getElementById('stage-section-8').classList.remove('hidden');
+
+      } else if (stageNum === 9) {
+        // ⑨ 最後の選択
+        document.getElementById('stage-section-9').classList.remove('hidden');
+      }
+    }
+
+    // 次のステージに進むシンプルコントローラー
+    function nextStage() {
+      if (currentStageNum < 9) {
+        showStage(currentStageNum + 1);
+      }
+    }
+
+    // 質問動画が終了・スキップした際に選択肢フォームを表示
+    function showQuestionInteraction() {
+      const qVideo = document.getElementById('question-video');
+      
+      // 動画の視認性を少し落とし、質問を強調
+      qVideo.classList.add('opacity-40');
+
+      // 質問エリアを表示
+      document.getElementById('interaction-area').classList.remove('hidden');
+    }
+
+    // ブラウザの仕様（自動再生制限など）への対策を施した動画再生メソッド
+    function playVideoSafe(videoId) {
+      const vid = document.getElementById(videoId);
+      if (vid) {
+        vid.muted = false; // 音を出したい場合はユーザーがアクションを起こす必要があるため
+        const playPromise = vid.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            // 自動再生が制限された場合は自動的にミュートにして再試行
+            console.log("Auto-play prevented. Retrying muted...");
+            vid.muted = true;
+            vid.play();
+          });
+        }
+      }
+    }
+
+    // 進行状況バーとステージ名のビジュアル同期
+    function updateProgress(stageNum) {
+      const progressPercent = (stageNum / 9) * 100;
+      document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+      document.getElementById('stage-badge').textContent = `ステージ ${stageNum}/9`;
+      
+      const stageNames = [
+        "オープニング",
+        "自己紹介の森",
+        "信頼の吊り橋",
+        "弱みの洞窟",
+        "紹介の迷宮",
+        "魅力の宝箱",
+        "魅力の秘宝",
+        "映像書庫",
+        "最後の選択"
+      ];
+      document.getElementById('stage-name').textContent = stageNames[stageNum - 1];
+    }
+
+    // 最初からやり直す処理
+    function restartAdventure() {
+      // ユーザーの過去の回答履歴を初期化
+      for (let key in userAnswers) {
+        userAnswers[key] = [null, null, null];
+      }
+      currentQuestionIdx = 0;
+      // ステージ1から再起動
+      showStage(1);
+    }
+  </script>
+</body>
+</html>
