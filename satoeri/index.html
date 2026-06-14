@@ -43,6 +43,13 @@
     .video-overlay-active {
       transition: all 1s ease-in-out;
     }
+    /* 動画要素のデフォルトコントローラー非表示化とインライン再生の強化 */
+    video::-webkit-media-controls {
+      display: none !important;
+    }
+    video {
+      pointer-events: none; /* ユーザーのタップによる標準コントロール表示を阻止 */
+    }
   </style>
 </head>
 <body class="text-stone-800 antialiased font-medium">
@@ -75,7 +82,7 @@
       <section id="stage-section-1" class="stage-container fade-in w-full h-full min-h-[500px] flex flex-col justify-between relative p-4">
         <!-- 全画面動画コンテナ -->
         <div class="absolute inset-0 bg-black overflow-hidden z-0">
-          <video id="video-1" class="w-full h-full object-contain" playsinline controls>
+          <video id="video-1" class="w-full h-full object-contain" playsinline webkit-playsinline muted disablepictureinpicture>
           </video>
           <button onclick="skipVideo(1)" class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-md hover:bg-black/80 font-bold transition z-30">
             ⏭️ 動画をスキップ
@@ -88,7 +95,7 @@
         
         <!-- 全画面動画背景用コンテナ -->
         <div class="absolute inset-0 bg-black overflow-hidden z-0">
-          <video id="question-video" class="w-full h-full object-contain" playsinline controls>
+          <video id="question-video" class="w-full h-full object-contain" playsinline muted loop>
           </video>
           <!-- テスト用スキップ（動画上に常に浮かぶ） -->
           <button id="btn-skip-question-video" class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-md hover:bg-black/80 font-bold transition z-30">
@@ -112,7 +119,7 @@
         
         <!-- 全画面動画背景用コンテナ -->
         <div class="absolute inset-0 bg-black overflow-hidden z-0">
-          <video id="video-6" class="w-full h-full object-contain" playsinline controls></video>
+          <video id="video-6" class="w-full h-full object-contain" playsinline muted loop></video>
           <button onclick="skipVideo(6)" class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-md hover:bg-black/80 font-bold transition z-30">
             ⏭️ 動画をスキップ
           </button>
@@ -138,7 +145,7 @@
         
         <!-- 全画面動画背景用コンテナ -->
         <div class="absolute inset-0 bg-black overflow-hidden z-0">
-          <video id="video-7" class="w-full h-full object-contain" playsinline controls></video>
+          <video id="video-7" class="w-full h-full object-contain" playsinline muted loop></video>
           <button onclick="skipVideo(7)" class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-md hover:bg-black/80 font-bold transition z-30">
             ⏭️ 動画をスキップ
           </button>
@@ -615,12 +622,18 @@
     function playVideoSafe(videoId) {
       const vid = document.getElementById(videoId);
       if (vid) {
-        vid.muted = false; // 音を出したい場合はユーザーがアクションを起こす必要があるため
+        // 音声を出すために、自動再生制限を突破した上で再生を試みます
+        vid.muted = true; // 初回は確実に再生を開始させるためにミュート
+        vid.removeAttribute('controls'); // コントロールUIを絶対に表示させない
+
         const playPromise = vid.play();
         if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            // 自動再生が制限された場合は自動的にミュートにして再試行
-            console.log("Auto-play prevented. Retrying muted...");
+          playPromise.then(() => {
+            // 自動再生成功後にミュートを解除する（ユーザーのアクションにより可能になります）
+            vid.muted = false;
+          }).catch(error => {
+            // 自動再生が制限された場合はミュートのまま再生を維持
+            console.log("Auto-play prevented. Playing muted...");
             vid.muted = true;
             vid.play();
           });
