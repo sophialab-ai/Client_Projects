@@ -169,11 +169,11 @@
               診断詳細テキストが入ります。
             </p>
 
-            <!-- おすすめアトリエ素材提案（お伺いした要望に基づき動的差し替え対応へ最適化） -->
-            <div id="diagnosis-recommend" class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 max-w-sm mx-auto text-center">
-              <span id="diagnosis-recommend-header" class="text-xs font-black text-emerald-800 block">🧙 アトリエからの提案</span>
-              <span id="diagnosis-recommend-sub" class="text-xs text-emerald-700 font-bold block mt-1">タイプごとの一言メッセージ</span>
-              <span id="diagnosis-recommend-text" class="text-lg font-black text-emerald-950 block mt-1">おすすめアセット</span>
+            <!-- おすすめアトリエ素材提案（お伺いした要望に基づき動的メッセージとアセット内容へ切り替え） -->
+            <div id="diagnosis-recommend" class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 max-w-sm mx-auto text-center w-full">
+              <span id="diagnosis-recommend-header" class="text-xs font-black text-emerald-800 block">アトリエからの提案</span>
+              <span id="diagnosis-recommend-sub" class="text-xs text-emerald-700 font-bold block mt-1">おすすめコメント</span>
+              <span id="diagnosis-recommend-text" class="text-lg font-black text-emerald-950 block mt-1">アセット名</span>
             </div>
           </div>
           <button onclick="nextStage()" class="btn-adventure w-full bg-amber-500 hover:bg-amber-400 text-white py-3.5 px-6 rounded-full font-black text-lg text-stone-900 border-2 border-[#5d4037] mt-4 flex-shrink-0">
@@ -212,7 +212,7 @@
         </div>
       </section>
 
-      <!-- ⑨ 最後の選択ステージ -->
+      <!-- ⑨ 最後の選択ステージ (透明クリックエリア全体カバー最適化適用) -->
       <section id="stage-section-9" class="stage-container hidden fade-in w-full h-full p-4">
         <div class="bg-white rounded-3xl p-5 border-4 border-[#5d4037] shadow-lg text-center w-full z-10">
           <!-- 親要素に w-full h-auto を指定して画像の自然なアスペクト比に完全に追従させる -->
@@ -220,12 +220,12 @@
             <!-- 最後の選択背景画像（w-full h-auto block により、一切の左右見切れを防ぎ、スマホ画面へアスペクト比を保って完全追従） -->
             <img id="image-future" src="" alt="最後の未来選択マップ" class="w-full h-auto block mx-auto">
             
-            <!-- 透明クリックエリアの精密配置（画像アスペクト比に同期しているため比率ずれが絶対に起きません） -->
-            <!-- ① 動くキャラ作成 (中央の巻物内の上のボタン) -->
-            <a id="link-character" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 45%; left: 26%; width: 34%; height: 11%;" title="動くキャラ作成"></a>
+            <!-- 透明クリックエリアの精密配置（縦ズレを解消し、上ボタンを上へ・下ボタンを下へシフトして完全に一致化） -->
+            <!-- ① 動くキャラ作成 (中央の巻物内の上のボタンイラストにぴったり重なるよう調整：上方向へシフト) -->
+            <a id="link-character" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 44%; left: 17%; width: 66%; height: 11%;" title="動くキャラ作成"></a>
             
-            <!-- ② ムービー制作 (中央 of 巻物内の下のボタン) -->
-            <a id="link-movie" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 57%; left: 26%; width: 34%; height: 11%;" title="ムービー制作"></a>
+            <!-- ② ムービー制作 (中央の巻物内の下のボタンイラストにぴったり重なるよう調整：下方向へシフト) -->
+            <a id="link-movie" href="#" target="_blank" class="absolute bg-transparent cursor-pointer" style="top: 57.5%; left: 17%; width: 66%; height: 11%;" title="ムービー制作"></a>
           </div>
 
           <div class="mt-6 border-t pt-4">
@@ -548,7 +548,7 @@
       document.getElementById('link-character').href = APP_CONFIG.links.createCharacter;
       document.getElementById('link-movie').href = APP_CONFIG.links.createMovie;
 
-      // HTML5 videoのended(再生終了)イベントを設定
+      // HTML5 video的ended(再生終了)イベントを設定
       setupVideoListeners();
     }
 
