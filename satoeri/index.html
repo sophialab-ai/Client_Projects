@@ -140,7 +140,7 @@
         </div>
       </section>
 
-      <!-- ⑦ 魅力の秘宝ステージ (全画面動画背景仕様 + 終了後の大きな案内パネル) -->
+      <!-- ⑦ 魅力の秘宝ステージ (全画面動画背景仕様 + 終了後の大きな案内パネル + 診断結果差し込み) -->
       <section id="stage-section-7" class="stage-container hidden fade-in w-full h-full min-h-[500px] flex flex-col justify-between relative p-4">
         
         <!-- 全画面動画背景用コンテナ -->
@@ -152,15 +152,31 @@
         </div>
 
         <!-- 大きな案内パネル (動画終了後に画面全体をほとんど覆うように表示) -->
-        <div id="next-action-7" class="hidden absolute inset-4 bg-white/98 backdrop-blur-md rounded-3xl p-6 border-4 border-[#5d4037] shadow-2xl z-20 flex flex-col justify-center items-center text-center fade-in">
-          <div class="my-auto space-y-6">
-            <span class="text-5xl block animate-pulse">✨</span>
-            <h3 class="text-2xl font-black text-amber-700">魅力の秘宝を獲得！</h3>
-            <p class="text-[#5d4037] text-base leading-relaxed font-bold px-2">
-              ついに本当の魅力（秘宝）が輝きを放ちました！<br>この輝きを携えて、これまでの旅路の記録が保管されている映像書庫へと向かいましょう。
+        <div id="next-action-7" class="hidden absolute inset-4 bg-white/98 backdrop-blur-md rounded-3xl p-6 border-4 border-[#5d4037] shadow-2xl z-20 flex flex-col justify-between items-center text-center fade-in overflow-y-auto">
+          <!-- 診断結果の上部アイコン・タイトル表示エリア -->
+          <div class="w-full my-auto space-y-4 py-4">
+            <div id="diagnosis-icon" class="text-5xl block animate-pulse">✨</div>
+            <h3 class="text-xl font-black text-amber-800">診断結果</h3>
+            
+            <!-- 柔らかい断定を避けた表現タイプ名 -->
+            <div id="diagnosis-title-wrapper" class="bg-amber-50 border-2 border-amber-300 rounded-2xl py-3 px-4 shadow-sm inline-block max-w-full">
+              <p id="diagnosis-sub" class="text-xs text-amber-700 font-black mb-1">あなたはこんなタイプかも！</p>
+              <h4 id="diagnosis-type-name" class="text-2xl font-black text-amber-900">タイプ名</h4>
+            </div>
+            
+            <!-- 診断結果テキスト -->
+            <p id="diagnosis-desc" class="text-stone-700 text-sm leading-relaxed font-bold px-3 text-left bg-stone-50 border border-stone-200 rounded-xl p-4 max-w-sm mx-auto">
+              診断詳細テキストが入ります。
             </p>
+
+            <!-- おすすめアトリエ素材提案（お伺いした要望に基づき動的差し替え対応へ最適化） -->
+            <div id="diagnosis-recommend" class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 max-w-sm mx-auto text-center">
+              <span id="diagnosis-recommend-header" class="text-xs font-black text-emerald-800 block">🧙 アトリエからの提案</span>
+              <span id="diagnosis-recommend-sub" class="text-xs text-emerald-700 font-bold block mt-1">タイプごとの一言メッセージ</span>
+              <span id="diagnosis-recommend-text" class="text-lg font-black text-emerald-950 block mt-1">おすすめアセット</span>
+            </div>
           </div>
-          <button onclick="nextStage()" class="btn-adventure w-full bg-amber-500 hover:bg-amber-400 text-white py-4 px-6 rounded-full font-black text-lg text-stone-900 border-2 border-[#5d4037] mt-auto">
+          <button onclick="nextStage()" class="btn-adventure w-full bg-amber-500 hover:bg-amber-400 text-white py-3.5 px-6 rounded-full font-black text-lg text-stone-900 border-2 border-[#5d4037] mt-4 flex-shrink-0">
             秘宝を受け取って映像書庫へ 🏛️
           </button>
         </div>
@@ -392,13 +408,86 @@
       links: {
         // ⑧ 映像書庫用
         customerVoice: "https://oekaki-movie.co.jp/voice/1627/", // お客様の声URL
-        satoeriPhilosophy: "https://youtu.be/vcp-_vXmkmg", // サトエリの想いURL
+        satoeriPhilosophy: "https://youtu.be/vcp-_vXmkmg", // サトエリの想いURL (タイポ修正済み)
         caseStudies: "https://youtu.be/7zFt0v6efxg",             // 制作事例URL
         caseCollection: "https://satoeri-oekaki.com/",     // 制作事例集URL
         
         // ⑨ 最後の選択用
         createCharacter: "https://forms.gle/5Gn6zbyZpa3WVctg9", // 動くキャラ作成URL
         createMovie: "https://docs.google.com/forms/d/e/1FAIpQLSf5wYHc3U-NIm8v73kkv-vThrmmTDVvOAZLNV-95EOJ06BK9Q/viewform"          // ムービー制作URL
+      }
+    };
+
+    /* ==========================================================================
+       診断ロジック・配点データ設定 (診断用ファイル.xlsx 配点準拠)
+       ========================================================================== */
+    const DIAGNOSIS_SCORING = {
+      mori: [
+        // 質問1 (A, B, C, D)
+        { A: { story: 0, world: 0, trust: 1, affinity: 0 }, B: { story: 1, world: 0, trust: 0, affinity: 0 }, C: { story: 0, world: 0, trust: 0, affinity: 1 }, D: { story: 1, world: 0, trust: 0, affinity: 0 } },
+        // 質問2 (A, B, C, D)
+        { A: { story: 0, world: 2, trust: 0, affinity: 0 }, B: { story: 0, world: 0, trust: 1, affinity: 0 }, C: { story: 0, world: 0, trust: 0, affinity: 1 }, D: { story: 0, world: 0, trust: 1, affinity: 0 } },
+        // 質問3 (A, B, C, D)
+        { A: { story: 1, world: 0, trust: 0, affinity: 0 }, B: { story: 0, world: 2, trust: 0, affinity: 0 }, C: { story: 0, world: 2, trust: 0, affinity: 0 }, D: { story: 2, world: 0, trust: 0, affinity: 0 } }
+      ],
+      bridge: [
+        // 質問1 (A, B, C, D)
+        { A: { story: 0, world: 2, trust: 0, affinity: 0 }, B: { story: 0, world: 0, trust: 1, affinity: 0 }, C: { story: 0, world: 0, trust: 0, affinity: 1 }, D: { story: 1, world: 0, trust: 0, affinity: 0 } },
+        // 質問2 (A, B, C, D)
+        { A: { story: 0, world: 0, trust: 1, affinity: 0 }, B: { story: 0, world: 0, trust: 1, affinity: 0 }, C: { story: 0, world: 0, trust: 0, affinity: 1 }, D: { story: 1, world: 0, trust: 0, affinity: 0 } },
+        // 質問3 (A, B, C, D)
+        { A: { story: 0, world: 0, trust: 1, affinity: 0 }, B: { story: 0, world: 0, trust: 1, affinity: 0 }, C: { story: 0, world: 0, trust: 0, affinity: 1 }, D: { story: 1, world: 0, trust: 0, affinity: 0 } }
+      ],
+      cave: [
+        // 質問1 (A, B, C, D)
+        { A: { story: 0, world: 0, trust: 0, affinity: 1 }, B: { story: 0, world: 0, trust: 1, affinity: 0 }, C: { story: 0, world: 1, trust: 0, affinity: 0 }, D: { story: 1, world: 0, trust: 0, affinity: 0 } },
+        // 質問2 (A, B, C, D)
+        { A: { story: 0, world: 0, trust: 1, affinity: 0 }, B: { story: 0, world: 0, trust: 0, affinity: 1 }, C: { story: 1, world: 0, trust: 0, affinity: 0 }, D: { story: 0, world: 0, trust: 0, affinity: 1 } },
+        // 質問3 (A, B, C, D)
+        { A: { story: 1, world: 0, trust: 0, affinity: 0 }, B: { story: 0, world: 0, trust: 1, affinity: 0 }, C: { story: 0, world: 0, trust: 0, affinity: 1 }, D: { story: 1, world: 0, trust: 0, affinity: 0 } }
+      ],
+      maze: [
+        // 質問1 (A, B, C, D)
+        { A: { story: 0, world: 0, trust: 0, affinity: 1 }, B: { story: 0, world: 0, trust: 0, affinity: 1 }, C: { story: 1, world: 0, trust: 0, affinity: 0 }, D: { story: 0, world: 0, trust: 1, affinity: 0 } },
+        // 質問2 (A, B, C, D)
+        { A: { story: 0, world: 1, trust: 0, affinity: 0 }, B: { story: 0, world: 0, trust: 0, affinity: 1 }, C: { story: 0, world: 0, trust: 1, affinity: 0 }, D: { story: 1, world: 0, trust: 0, affinity: 0 } },
+        // 質問3 (A, B, C, D)
+        { A: { story: 1, world: 0, trust: 0, affinity: 0 }, B: { story: 0, world: 0, trust: 1, affinity: 0 }, C: { story: 0, world: 1, trust: 0, affinity: 0 }, D: { story: 0, world: 0, trust: 0, affinity: 1 } }
+      ]
+    };
+
+    const DIAGNOSIS_TYPES = {
+      story: {
+        name: "ストーリー共感型",
+        icon: "🎬",
+        desc: "人の想いや経験談に心を動かされるタイプです。サービスの背景や、「なぜその仕事をしているのか」を知ることで信頼につながりやすいでしょう。",
+        recommendHeader: "🧙 アトリエからの提案",
+        recommendSub: "あなたの想いが誰かの心を動かすかも…",
+        recommend: "🎬 1分ムービー"
+      },
+      world: {
+        name: "世界観共鳴型",
+        icon: "🎨",
+        desc: "あなたは雰囲気や世界観から魅力を感じるタイプです。言葉だけではなく、「なんか好き」「なんか気になる」という感覚を大切にしています。",
+        recommendHeader: "🧙 アトリエからの提案",
+        recommendSub: "あなただけの世界観がもっと伝わるかも…",
+        recommend: "🎨 動くキャラ"
+      },
+      trust: {
+        name: "信頼重視型",
+        icon: "🛡️",
+        desc: "実績や経験、専門性から安心感を得るタイプです。誰がどんな人なのかだけでなく、どんな成果を出してきたかを重視します。",
+        recommendHeader: "🧙 アトリエからの提案",
+        recommendSub: "あなたの実績や強みがもっと伝わるかも…",
+        recommend: "🎬 1分ムービー"
+      },
+      affinity: {
+        name: "親近感共感型",
+        icon: "🧙",
+        desc: "人柄や安心感から信頼を築くタイプです。親しみやすさや共感できる部分に魅力を感じます。",
+        recommendHeader: "🧙 アトリエからの提案",
+        recommendSub: "あなたらしい人柄がもっと伝わるかも…",
+        recommend: "🎨 動くキャラ"
       }
     };
 
@@ -480,8 +569,10 @@
         document.getElementById('next-action-6').classList.remove('hidden');
       });
 
-      // ⑦ 魅力の秘宝動画が終了したら「次へ進む」ボタン表示
+      // ⑦ 魅力の秘宝動画が終了したら「次へ進む」ボタン(診断結果つき)表示
       document.getElementById('video-7').addEventListener('ended', function() {
+        // 秘宝動画終了時に診断を実行して表示を更新する
+        runDiagnosis();
         document.getElementById('next-action-7').classList.remove('hidden');
       });
     }
@@ -499,8 +590,59 @@
         document.getElementById('next-action-6').classList.remove('hidden');
       } else if (stageId === 7) {
         document.getElementById('video-7').pause();
+        runDiagnosis();
         document.getElementById('next-action-7').classList.remove('hidden');
       }
+    }
+
+    // 診断集計ロジックの実行
+    function runDiagnosis() {
+      // 各タイプの点数カウンター
+      let scores = {
+        story: 0,
+        world: 0,
+        trust: 0,
+        affinity: 0
+      };
+
+      // 各ステージ回答を走査して配点集計
+      const stages = ['mori', 'bridge', 'cave', 'maze'];
+      stages.forEach(stage => {
+        const answers = userAnswers[stage];
+        const scoring = DIAGNOSIS_SCORING[stage];
+        for (let i = 0; i < 3; i++) {
+          const selectedVal = answers[i]; // 'A', 'B', 'C', 'D' など
+          if (selectedVal && scoring && scoring[i] && scoring[i][selectedVal]) {
+            const pointObj = scoring[i][selectedVal];
+            scores.story += pointObj.story || 0;
+            scores.world += pointObj.world || 0;
+            scores.trust += pointObj.trust || 0;
+            scores.affinity += pointObj.affinity || 0;
+          }
+        }
+      });
+
+      // 最高得点タイプを判定
+      // 同点の場合の優先順位: story -> world -> trust -> affinity
+      let bestType = 'story';
+      let maxScore = -1;
+      const order = ['story', 'world', 'trust', 'affinity'];
+
+      order.forEach(type => {
+        if (scores[type] > maxScore) {
+          maxScore = scores[type];
+          bestType = type;
+        }
+      });
+
+      // 診断結果をDOMへ流し込み（アトリエからのオススメ表示の各項目を動的書き換え）
+      const resultData = DIAGNOSIS_TYPES[bestType];
+      document.getElementById('diagnosis-icon').textContent = resultData.icon;
+      document.getElementById('diagnosis-type-name').textContent = resultData.name;
+      document.getElementById('diagnosis-desc').innerHTML = resultData.desc;
+      document.getElementById('diagnosis-recommend-header').textContent = resultData.recommendHeader;
+      document.getElementById('diagnosis-recommend-sub').textContent = resultData.recommendSub;
+      document.getElementById('diagnosis-recommend-text').textContent = resultData.recommend;
     }
 
     // 各ステージで、3つの質問を段階的にレンダーするための関数
