@@ -23,6 +23,18 @@
       transform: translateY(4px);
       box-shadow: 0 2px 0 #4a2c11;
     }
+    .btn-question-back {
+      background: transparent;
+      border: 0;
+      color: #8a6346;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.2s ease;
+    }
+    .btn-question-back:hover {
+      color: #5d4037;
+    }
     /* ファンタジー風グラデーション背景 */
     .bg-fantasy {
       background: linear-gradient(135deg, #fffcf0 0%, #fbf3db 100%);
@@ -105,6 +117,9 @@
 
         <!-- 質問エリア & 回答ボタン (動画終了後に、スライドアップで浮かび上がる) -->
         <div id="interaction-area" class="hidden w-full bg-white/95 backdrop-blur-sm rounded-3xl p-5 border-4 border-[#5d4037] shadow-2xl z-20 animate-fade-in relative mt-auto mb-4">
+          <button id="btn-question-back" type="button" onclick="goToPreviousQuestion()" class="btn-question-back hidden mb-3 text-left font-bold">
+            ‹ 前へ
+          </button>
           <!-- 質問番号インジケーター -->
           <div id="question-step-indicator" class="text-xs text-amber-700 font-black mb-1 text-center">質問 1 / 3</div>
           <p id="question-text" class="font-black text-[#5d4037] mb-4 text-base text-center leading-snug"></p>
@@ -392,7 +407,7 @@
               ]
             },
             {
-              question: "質問③：もしあなた専用の紹介ツールがあったら？",
+              question: "質問③：もしあなた専用 of 紹介ツールがあったら？",
               options: [
                 { text: "名刺代わりに使いたい", value: "A" },
                 { text: "商談前に見てもらいたい", value: "B" },
@@ -461,7 +476,7 @@
         name: "ストーリー共感型",
         icon: "🎬",
         desc: "人の想いや経験談に心を動かされるタイプです。サービスの背景や、「なぜその仕事をしているのか」を知ることで信頼につながりやすいでしょう。",
-        recommendHeader: "🧙 サトエリからの提案",
+        recommendHeader: "🧙 アトリエからの提案",
         recommendSub: "あなたの想いが誰かの心を動かすかも…",
         recommend: "🎬 1分ムービー"
       },
@@ -469,7 +484,7 @@
         name: "世界観共鳴型",
         icon: "🎨",
         desc: "あなたは雰囲気や世界観から魅力を感じるタイプです。言葉だけではなく、「なんか好き」「なんか気になる」という感覚を大切にしています。",
-        recommendHeader: "🧙 サトエリからの提案",
+        recommendHeader: "🧙 アトリエからの提案",
         recommendSub: "あなただけの世界観がもっと伝わるかも…",
         recommend: "🎨 動くキャラ"
       },
@@ -477,7 +492,7 @@
         name: "信頼重視型",
         icon: "🛡️",
         desc: "実績や経験、専門性から安心感を得るタイプです。誰がどんな人なのかだけでなく、どんな成果を出してきたかを重視します。",
-        recommendHeader: "🧙 サトエリからの提案",
+        recommendHeader: "🧙 アトリエからの提案",
         recommendSub: "あなたの実績や強みがもっと伝わるかも…",
         recommend: "🎬 1分ムービー"
       },
@@ -485,7 +500,7 @@
         name: "親近感共感型",
         icon: "🧙",
         desc: "人柄や安心感から信頼を築くタイプです。親しみやすさや共感できる部分に魅力を感じます。",
-        recommendHeader: "🧙 サトエリからの提案",
+        recommendHeader: "🧙 アトリエからの提案",
         recommendSub: "あなたらしい人柄がもっと伝わるかも…",
         recommend: "🎨 動くキャラ"
       }
@@ -649,6 +664,14 @@
     function renderQuestionStep(qKey) {
       const qData = APP_CONFIG.questions[qKey];
       const stepData = qData.steps[currentQuestionIdx];
+      const selectedAnswer = userAnswers[qKey][currentQuestionIdx];
+
+      // 前の質問がある場合だけ、控えめな戻るリンクを表示
+      const backButton = document.getElementById('btn-question-back');
+      if (backButton) {
+        const canGoBack = currentQuestionIdx > 0 || currentStageNum > 2;
+        backButton.classList.toggle('hidden', !canGoBack);
+      }
 
       // 質問番号表示
       document.getElementById('question-step-indicator').textContent = `質問 ${currentQuestionIdx + 1} / 3`;
@@ -661,7 +684,8 @@
 
       stepData.options.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = "w-full text-left bg-white hover:bg-amber-50 active:bg-amber-100 text-[#5d4037] p-2.5 rounded-xl border-2 border-stone-300 font-bold shadow-sm transition hover:border-[#5d4037] text-sm";
+        const selectedClass = selectedAnswer === opt.value ? " bg-amber-50 border-[#5d4037]" : " bg-white border-stone-300";
+        btn.className = "w-full text-left hover:bg-amber-50 active:bg-amber-100 text-[#5d4037] p-2.5 rounded-xl border-2 font-bold shadow-sm transition hover:border-[#5d4037] text-sm" + selectedClass;
         btn.innerHTML = `<span class="inline-block bg-[#5d4037] text-white rounded-full w-5.5 h-5.5 text-center text-xs leading-5.5 mr-2 font-black">${opt.value}</span>${opt.text}`;
         btn.onclick = function() {
           // 回答の記録
@@ -677,6 +701,49 @@
         };
         optContainer.appendChild(btn);
       });
+    }
+
+    function getQuestionKeyByStage(stageNum) {
+      if (stageNum === 3) return 'bridge';
+      if (stageNum === 4) return 'cave';
+      if (stageNum === 5) return 'maze';
+      return 'mori';
+    }
+
+    function showQuestionDirectly(stageNum, questionIdx) {
+      currentStageNum = stageNum;
+      currentQuestionIdx = questionIdx;
+
+      document.querySelectorAll('.stage-container').forEach(el => el.classList.add('hidden'));
+      updateProgress(stageNum);
+
+      const qKey = getQuestionKeyByStage(stageNum);
+      const qSection = document.getElementById('stage-section-question');
+      const qVideo = document.getElementById('question-video');
+
+      qSection.classList.remove('hidden');
+      qVideo.pause();
+      qVideo.src = APP_CONFIG.videos[qKey];
+      qVideo.load();
+      qVideo.classList.add('opacity-40');
+
+      document.getElementById('btn-skip-question-video').classList.add('hidden');
+      document.getElementById('interaction-area').classList.remove('hidden');
+      renderQuestionStep(qKey);
+    }
+
+    function goToPreviousQuestion() {
+      if (currentStageNum < 2 || currentStageNum > 5) return;
+
+      if (currentQuestionIdx > 0) {
+        currentQuestionIdx--;
+        renderQuestionStep(getQuestionKeyByStage(currentStageNum));
+        return;
+      }
+
+      if (currentStageNum > 2) {
+        showQuestionDirectly(currentStageNum - 1, 2);
+      }
     }
 
     // 指定ステージの画面を表示状態にする
@@ -700,10 +767,7 @@
         qSection.classList.remove('hidden');
 
         // 表示する質問内容のキーマッピング
-        let qKey = 'mori';
-        if (stageNum === 3) qKey = 'bridge';
-        if (stageNum === 4) qKey = 'cave';
-        if (stageNum === 5) qKey = 'maze';
+        let qKey = getQuestionKeyByStage(stageNum);
 
         // 各質問ステージ開始時に、質問進行インデックスを0（1問目）にリセット
         currentQuestionIdx = 0;
@@ -716,6 +780,7 @@
         // 各種状態初期化 (動画再生中表示・全画面背景演出)
         document.getElementById('interaction-area').classList.add('hidden');
         qVideo.classList.remove('opacity-40');
+        document.getElementById('btn-skip-question-video').classList.remove('hidden');
 
         // スキップボタンの引数を設定
         document.getElementById('btn-skip-question-video').onclick = function() {
