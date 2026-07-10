@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>えみラボ体操教室 ログイン</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body class="login-page">
+    <main class="login-screen" aria-label="えみラボ体操教室 入口">
+      <video class="background-video" autoplay muted loop playsinline preload="auto">
+        <source src="./assets/login-video.mp4" type="video/mp4" />
+      </video>
+
+      <div class="video-overlay" aria-hidden="true"></div>
+
+      <header class="brand-header">
+        <h1>えみラボ体操教室</h1>
+      </header>
+
+      <section class="login-panel">
+        <form class="login-form" id="loginForm" novalidate>
+          <label class="field">
+            <span>ID</span>
+            <input
+              id="studentId"
+              name="studentId"
+              type="text"
+              inputmode="text"
+              autocomplete="username"
+              placeholder="例：はなこ001"
+              required
+            />
+          </label>
+
+          <label class="field">
+            <span>パスワード</span>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="パスワードを入力"
+              required
+            />
+          </label>
+
+          <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
+
+          <button class="login-button" type="submit">ログイン</button>
+
+          <a class="forgot-link" href="#" aria-label="パスワードをお忘れの方はこちら">
+            パスワードをお忘れの方はこちら
+          </a>
+        </form>
+
+        <!-- 開発用デモ導線: 本番公開時はこのブロックを削除してください。 -->
+        <button class="demo-button" id="demoButton" type="button">デモを見る</button>
+      </section>
+    </main>
+
+    <script src="./js/app.js"></script>
+  </body>
+</html>
