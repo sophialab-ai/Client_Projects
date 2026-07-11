@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>えみラボ体操教室 ホーム</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body class="home-page home-page-sequenced">
+    <main class="home-shell" aria-label="えみラボ体操教室 ホーム">
+      <header class="home-header">
+        <p class="home-kicker">えみラボ体操教室</p>
+        <h1>今日も先生と一緒に</h1>
+      </header>
+
+      <section class="teacher-photo-card fade-step fade-step-1" aria-label="先生の写真">
+        <img src="./assets/teacher-home.jpg" alt="笑顔で両手を広げて迎えている先生" />
+      </section>
+
+      <section class="welcome-section fade-step fade-step-2" aria-live="polite">
+        <p class="greeting-text" id="greetingText">こんにちは😊</p>
+      </section>
+
+      <section class="teacher-message fade-step fade-step-3" aria-labelledby="teacherMessageTitle">
+        <p class="section-label" id="teacherMessageTitle">先生からのメッセージ</p>
+        <p class="message-text" id="teacherMessageText">今日も笑顔で身体を動かしていきましょう😊🌸</p>
+      </section>
+
+      <section class="menu-section fade-step fade-step-4" aria-labelledby="menuTitle">
+        <h2 id="menuTitle">メニュー</h2>
+        <div class="menu-grid" id="homeMenu"></div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="下部ナビゲーション">
+      <a class="bottom-nav-item is-active" href="./home.html" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">🏠</span>
+        <span>ホーム</span>
+      </a>
+      <a class="bottom-nav-item" href="#">
+        <span class="nav-icon" aria-hidden="true">🎥</span>
+        <span>レッスン動画</span>
+      </a>
+      <a class="bottom-nav-item" href="#">
+        <span class="nav-icon" aria-hidden="true">📅</span>
+        <span>スケジュール</span>
+      </a>
+      <a class="bottom-nav-item" href="#">
+        <span class="nav-icon" aria-hidden="true">👤</span>
+        <span>マイページ</span>
+      </a>
+    </nav>
+
+    <script src="./js/app.js"></script>
+  </body>
+</html>
