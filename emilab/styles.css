@@ -346,6 +346,10 @@ h1 {
   line-height: 1.7;
 }
 
+.message-text-loaded {
+  animation: warmFadeIn 520ms ease-out both;
+}
+
 .menu-section {
   margin-top: 22px;
 }

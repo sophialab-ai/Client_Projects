@@ -170,19 +170,19 @@ function getGreetingByHour(hour) {
 
 async function fetchSheetContent() {
   if (!CONFIG.contentEndpoint) {
-    return null;
+    throw new Error("GoogleスプレッドシートのURLが設定されていません。");
   }
 
   const response = await fetch(CONFIG.contentEndpoint);
 
   if (!response.ok) {
-    return null;
+    throw new Error("Googleスプレッドシートの内容を取得できませんでした。");
   }
 
   const payload = await response.json();
 
   if (!payload.ok) {
-    return null;
+    throw new Error(payload.message || "Googleスプレッドシートの内容を取得できませんでした。");
   }
 
   sessionStorage.setItem("emiLaboSheetContent", JSON.stringify(payload));
@@ -199,7 +199,15 @@ function getStoredSheetContent() {
 
 async function getSheetContent() {
   if (!sheetContentPromise) {
-    sheetContentPromise = fetchSheetContent().catch(() => getStoredSheetContent());
+    sheetContentPromise = fetchSheetContent().catch((error) => {
+      const storedContent = getStoredSheetContent();
+
+      if (storedContent) {
+        return storedContent;
+      }
+
+      throw error;
+    });
   }
 
   return sheetContentPromise;
@@ -229,6 +237,25 @@ function getTeacherMessageFromSheet(payload) {
   }
 
   return getFirstAvailableValue(messages[0], ["メッセージ", "本文", "内容", "message"]);
+}
+
+function updateTeacherMessage(text, shouldFadeIn = false) {
+  const teacherMessageText = document.querySelector("#teacherMessageText");
+
+  if (!teacherMessageText) {
+    return;
+  }
+
+  teacherMessageText.textContent = text;
+
+  if (!shouldFadeIn) {
+    return;
+  }
+
+  teacherMessageText.classList.remove("message-text-loaded");
+  requestAnimationFrame(() => {
+    teacherMessageText.classList.add("message-text-loaded");
+  });
 }
 
 function escapeHtml(value) {
@@ -328,7 +355,7 @@ async function initializeHome() {
   }
 
   greetingText.textContent = getGreetingByHour(new Date().getHours());
-  teacherMessageText.textContent = HOME_CONTENT.teacherMessage;
+  updateTeacherMessage("読み込み中...");
 
   homeMenu.innerHTML = HOME_CONTENT.menuItems
     .map(
@@ -348,11 +375,14 @@ async function initializeHome() {
     const teacherMessage = getTeacherMessageFromSheet(payload);
 
     if (teacherMessage) {
-      teacherMessageText.textContent = teacherMessage;
+      updateTeacherMessage(teacherMessage, true);
+    } else {
+      updateTeacherMessage("");
     }
 
     renderContentRoute();
   } catch (error) {
+    updateTeacherMessage(HOME_CONTENT.teacherMessage);
     console.warn("Googleスプレッドシートの内容を取得できませんでした。", error);
   }
 }
