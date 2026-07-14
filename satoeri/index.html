@@ -109,7 +109,6 @@
         <div class="absolute inset-0 bg-black overflow-hidden z-0">
           <video id="question-video" class="w-full h-full object-contain" playsinline webkit-playsinline muted disablepictureinpicture preload="auto">
           </video>
-          <!-- テスト用スキップ（動画上に常に浮かぶ） -->
           <button id="btn-skip-question-video" class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-md hover:bg-black/80 font-bold transition z-30">
             ⏭️ 動画をスキップ
           </button>
@@ -592,7 +591,6 @@
       });
     }
 
-    // デバッグ・動作テスト用に動画再生を強制スキップさせる補助メソッド
     function skipVideo(stageId) {
       if (stageId === 1) {
         document.getElementById('video-1').pause();
@@ -844,7 +842,6 @@
         if (playPromise !== undefined) {
           playPromise.catch(error => {
             // 自動再生が制限された場合は自動的にミュートにして再試行
-            console.log("Auto-play prevented. Retrying muted...");
             vid.muted = true;
             vid.play();
           });
