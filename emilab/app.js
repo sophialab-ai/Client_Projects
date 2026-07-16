@@ -573,6 +573,19 @@ function renderHomeMenu(homeMenu, payload) {
     .join("");
 }
 
+function buildMyPageComingSoon() {
+  return `
+    <section class="mypage-coming-soon" aria-label="マイページ準備中のお知らせ">
+      <h3>🌸 準備中</h3>
+      <p>
+        今後、ご要望を取り入れながら、<br />
+        より便利にご利用いただける機能を追加予定です😊
+      </p>
+      <p>どうぞお楽しみに✨</p>
+    </section>
+  `;
+}
+
 function buildAppSignature() {
   return `
     <div class="app-signature" role="contentinfo">
@@ -741,7 +754,7 @@ async function renderContentRoute() {
   contentList.innerHTML = '<div class="menu-card" role="status"><span class="menu-title">読み込み中です</span></div>';
 
   if (route.isMyPage) {
-    contentList.innerHTML = buildAppSignature();
+    contentList.innerHTML = buildMyPageComingSoon() + buildAppSignature();
     return;
   }
 

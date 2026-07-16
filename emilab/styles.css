@@ -458,6 +458,37 @@ h1 {
   box-shadow: 0 3px 8px rgba(229, 57, 53, 0.24);
 }
 
+.mypage-coming-soon {
+  grid-column: 1 / -1;
+  width: 100%;
+  border: 1px solid rgba(233, 85, 131, 0.13);
+  border-radius: 20px;
+  padding: 24px 18px;
+  color: var(--ink);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 24px rgba(112, 65, 79, 0.09);
+}
+
+.mypage-coming-soon h3 {
+  margin: 0 0 14px;
+  color: var(--pink-deep);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.mypage-coming-soon p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.75;
+}
+
+.mypage-coming-soon p + p {
+  margin-top: 10px;
+}
+
 .app-signature {
   grid-column: 1 / -1;
   width: 100%;
