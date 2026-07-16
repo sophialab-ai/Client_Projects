@@ -397,6 +397,10 @@ h1 {
   justify-self: center;
 }
 
+.home-menu-grid .menu-card {
+  position: relative;
+}
+
 .menu-card {
   display: grid;
   min-height: 92px;
@@ -438,6 +442,9 @@ h1 {
 }
 
 .notice-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   display: inline-grid;
   width: 17px;
   height: 17px;
