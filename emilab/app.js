@@ -113,11 +113,27 @@ class AuthService {
 
 const authService = new AuthService(CONFIG);
 const loginForm = document.querySelector("#loginForm");
+const forgotPasswordLink = document.querySelector(".forgot-link");
+const passwordHelpMessage = document.querySelector("#passwordHelpMessage");
 const demoButton = document.querySelector("#demoButton");
 const message = document.querySelector("#formMessage");
 let sheetContentPromise = null;
 let studentClassPromise = null;
 let teacherMessageTimer = null;
+
+if (forgotPasswordLink && passwordHelpMessage) {
+  forgotPasswordLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    passwordHelpMessage.hidden = false;
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !passwordHelpMessage.hidden) {
+      passwordHelpMessage.hidden = true;
+      forgotPasswordLink.focus();
+    }
+  });
+}
 
 if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {
