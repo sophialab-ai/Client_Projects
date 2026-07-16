@@ -21,7 +21,7 @@ const HOME_CONTENT = {
     { icon: "🎤", label: "ボイスレッスン", href: "#voice-lessons" },
     { icon: "📅", label: "スケジュール", href: "#schedule" },
     { icon: "🗒️", label: "お知らせ", href: "#notices" },
-    { icon: "👤", label: "マイページ", href: "./home.html" },
+    { icon: "👤", label: "マイページ", href: "#mypage" },
   ],
 };
 
@@ -65,6 +65,11 @@ const CONTENT_ROUTES = {
     linkKeys: [],
     titleKeys: ["タイトル", "件名", "名前", "title"],
     bodyKeys: ["メッセージ", "本文", "内容", "description"],
+  },
+  mypage: {
+    title: "マイページ",
+    dataKey: "mypage",
+    isMyPage: true,
   },
 };
 
@@ -568,6 +573,14 @@ function renderHomeMenu(homeMenu, payload) {
     .join("");
 }
 
+function buildAppSignature() {
+  return `
+    <div class="app-signature" role="contentinfo">
+      <span class="app-signature-text">Powered by Sophia Lab AI</span>
+    </div>
+  `;
+}
+
 function updateTeacherMessage(text, shouldFadeIn = false) {
   const teacherMessageText = document.querySelector("#teacherMessageText");
   const teacherMessageCard = document.querySelector(".teacher-message");
@@ -726,6 +739,11 @@ async function renderContentRoute() {
   setHomeView(false);
   contentTitle.textContent = route.title;
   contentList.innerHTML = '<div class="menu-card" role="status"><span class="menu-title">読み込み中です</span></div>';
+
+  if (route.isMyPage) {
+    contentList.innerHTML = buildAppSignature();
+    return;
+  }
 
   try {
     const payload = await getSheetContent();
