@@ -12,6 +12,7 @@ const SHEET_CONTENT_FETCHED_AT_KEY = "emiLaboSheetContentFetchedAt";
 const SHEET_CONTENT_CACHE_DURATION_MS = 120 * 1000;
 const SHEET_CONTENT_STUDENT_ID_KEY = "emiLaboSheetContentStudentId";
 const STUDENT_CLASS_FETCHED_KEY = "emiLaboStudentClassFetched";
+const READ_NOTICES_SIGNATURE_KEY = "emiLaboReadNoticesSignature";
 
 const HOME_CONTENT = {
   teacherMessage: "今日も笑顔で身体を動かしていきましょう😊🌸",
@@ -480,6 +481,93 @@ function getTeacherMessageFromSheet(payload) {
   return getFirstAvailableValue(messages[0], ["メッセージ", "本文", "内容", "message"]);
 }
 
+function getNoticeRows(payload) {
+  const notices = payload?.data?.notices;
+  return Array.isArray(notices) ? notices : [];
+}
+
+function createNoticesSignature(payload) {
+  const notices = getNoticeRows(payload);
+
+  if (notices.length === 0) {
+    return "";
+  }
+
+  return JSON.stringify(
+    notices.map((notice) => ({
+      rowNumber: notice._rowNumber || "",
+      date: getFirstAvailableValue(notice, ["投稿日", "日付", "date"]),
+      title: getFirstAvailableValue(notice, ["タイトル", "件名", "名前", "title"]),
+      body: getFirstAvailableValue(notice, ["本文", "内容", "お知らせ", "メッセージ", "description"]),
+    }))
+  );
+}
+
+function getReadNoticesStorageKey() {
+  const studentId = getStoredStudentId();
+  return studentId ? `${READ_NOTICES_SIGNATURE_KEY}:${studentId}` : READ_NOTICES_SIGNATURE_KEY;
+}
+
+function getReadNoticesSignature() {
+  try {
+    return String(localStorage.getItem(getReadNoticesStorageKey()) || "");
+  } catch (error) {
+    return "";
+  }
+}
+
+function saveReadNoticesSignature(signature) {
+  if (!signature) {
+    return;
+  }
+
+  try {
+    localStorage.setItem(getReadNoticesStorageKey(), signature);
+  } catch (error) {
+    // localStorageが使えない環境では、表示だけ継続します。
+  }
+}
+
+function hasUnreadNotices(payload) {
+  const signature = createNoticesSignature(payload);
+
+  if (!signature) {
+    return false;
+  }
+
+  return signature !== getReadNoticesSignature();
+}
+
+function markNoticesAsRead(payload) {
+  saveReadNoticesSignature(createNoticesSignature(payload));
+}
+
+function buildHomeMenuItem(item, showNoticeBadge) {
+  const isNoticeItem = item.href === "#notices";
+  const badgeHtml = isNoticeItem && showNoticeBadge
+    ? '<span class="notice-badge" aria-label="新しいお知らせがあります">①</span>'
+    : "";
+
+  return `
+        <a class="menu-card" href="${item.href}" aria-label="${item.label}">
+          <span class="menu-icon" aria-hidden="true">${item.icon}</span>
+          <span class="menu-title">${escapeHtml(item.label)}${badgeHtml}</span>
+        </a>
+      `;
+}
+
+function renderHomeMenu(homeMenu, payload) {
+  if (!homeMenu) {
+    return;
+  }
+
+  const showNoticeBadge = payload ? hasUnreadNotices(payload) : false;
+
+  homeMenu.innerHTML = HOME_CONTENT.menuItems
+    .map((item) => buildHomeMenuItem(item, showNoticeBadge))
+    .join("");
+}
+
 function updateTeacherMessage(text, shouldFadeIn = false) {
   const teacherMessageText = document.querySelector("#teacherMessageText");
   const teacherMessageCard = document.querySelector(".teacher-message");
@@ -645,6 +733,11 @@ async function renderContentRoute() {
       await ensureStudentClass();
     }
 
+    if (route.dataKey === "notices") {
+      markNoticesAsRead(payload);
+      renderHomeMenu(document.querySelector("#homeMenu"), payload);
+    }
+
     const sourceRows = payload?.data?.[route.dataKey] || [];
     let rows = Array.isArray(sourceRows) ? filterRowsByRoute(sourceRows, route) : [];
 
@@ -674,17 +767,7 @@ async function initializeHome() {
 
   greetingText.textContent = getGreetingByHour(new Date().getHours());
   updateTeacherMessage("");
-
-  homeMenu.innerHTML = HOME_CONTENT.menuItems
-    .map(
-      (item) => `
-        <a class="menu-card" href="${item.href}" aria-label="${item.label}">
-          <span class="menu-icon" aria-hidden="true">${item.icon}</span>
-          <span class="menu-title">${item.label}</span>
-        </a>
-      `
-    )
-    .join("");
+  renderHomeMenu(homeMenu);
 
   renderContentRoute();
 
@@ -698,6 +781,7 @@ async function initializeHome() {
       updateTeacherMessage("");
     }
 
+    renderHomeMenu(homeMenu, payload);
     renderContentRoute();
   } catch (error) {
     updateTeacherMessage(HOME_CONTENT.teacherMessage);

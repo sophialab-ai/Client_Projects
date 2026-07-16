@@ -430,6 +430,27 @@ h1 {
   line-height: 1.35;
 }
 
+.home-menu-grid .menu-title {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.notice-badge {
+  display: inline-grid;
+  width: 17px;
+  height: 17px;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  background: #e53935;
+  box-shadow: 0 3px 8px rgba(229, 57, 53, 0.24);
+}
+
 .schedule-card .schedule-description {
   margin: 0 0 8px;
   color: var(--pink-deep);
