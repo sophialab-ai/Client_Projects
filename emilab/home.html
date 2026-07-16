@@ -21,9 +21,9 @@
         <p class="greeting-text" id="greetingText">こんにちは😊</p>
       </section>
 
-      <section class="teacher-message fade-step fade-step-3" aria-labelledby="teacherMessageTitle">
+      <section class="teacher-message teacher-message-awaiting" aria-labelledby="teacherMessageTitle">
         <p class="section-label" id="teacherMessageTitle">先生からのメッセージ</p>
-        <p class="message-text" id="teacherMessageText">今日も笑顔で身体を動かしていきましょう😊🌸</p>
+        <p class="message-text" id="teacherMessageText"></p>
       </section>
 
       <section class="menu-section fade-step fade-step-4" aria-labelledby="menuTitle">
@@ -39,19 +39,23 @@
     </main>
 
     <nav class="bottom-nav" aria-label="下部ナビゲーション">
-      <a class="bottom-nav-item is-active" href="./home.html" aria-current="page">
+      <a class="bottom-nav-item is-active" href="./home.html" data-route="home" aria-current="page">
         <span class="nav-icon" aria-hidden="true">🏠</span>
         <span>ホーム</span>
       </a>
-      <a class="bottom-nav-item" href="#lesson-videos">
+      <a class="bottom-nav-item" href="#lesson-videos" data-route="lesson-videos">
         <span class="nav-icon" aria-hidden="true">🎥</span>
-        <span>レッスン動画</span>
+        <span>動画</span>
       </a>
-      <a class="bottom-nav-item" href="#schedule">
+      <a class="bottom-nav-item" href="#voice-lessons" data-route="voice-lessons">
+        <span class="nav-icon" aria-hidden="true">🎤</span>
+        <span>ボイス</span>
+      </a>
+      <a class="bottom-nav-item" href="#schedule" data-route="schedule">
         <span class="nav-icon" aria-hidden="true">📅</span>
         <span>スケジュール</span>
       </a>
-      <a class="bottom-nav-item" href="./home.html">
+      <a class="bottom-nav-item" href="./home.html" data-route="mypage">
         <span class="nav-icon" aria-hidden="true">👤</span>
         <span>マイページ</span>
       </a>
