@@ -1,0 +1,17 @@
+{
+  "name": "えみラボ体操教室",
+  "short_name": "えみラボ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff3f7",
+  "theme_color": "#fff3f7",
+  "icons": [
+    {
+      "src": "./emilab_icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
