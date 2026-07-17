@@ -210,32 +210,6 @@ h1 {
   display: none;
 }
 
-.demo-button {
-  display: block;
-  width: fit-content;
-  min-height: 28px;
-  margin: 7px auto 0;
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  border-radius: 999px;
-  padding: 0 14px;
-  color: rgba(216, 59, 112, 0.86);
-  font-size: 12px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.28);
-  box-shadow: none;
-  cursor: pointer;
-  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
-}
-
-.demo-button:active {
-  transform: translateY(1px);
-}
-
-.demo-button:focus-visible {
-  outline: 3px solid rgba(233, 85, 131, 0.18);
-  outline-offset: 3px;
-}
-
 @media (min-width: 520px) {
   .login-screen {
     padding-inline: 28px;
@@ -263,15 +237,8 @@ h1 {
   }
 
   .field span,
-  .forgot-link,
-  .demo-button {
+  .forgot-link {
     font-size: 11px;
-  }
-
-  .demo-button {
-    min-height: 24px;
-    margin-top: 5px;
-    padding-inline: 12px;
   }
 }
 

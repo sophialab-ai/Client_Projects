@@ -2,7 +2,6 @@ const CONFIG = {
   spreadsheetEndpoint: window.EMI_LABO_LOGIN_URL || window.EMI_LABO_GAS_URL || "",
   contentEndpoint: window.EMI_LABO_GAS_URL || "https://script.google.com/macros/s/AKfycbzluMNSk-kebmgiggou4-XuLKzDc7yCIQjJIyx9xamVO3OSMQnT_2DJQQ2E0H2lClmo4w/exec",
   homePath: "./home.html",
-  enableDemoRoute: true,
 };
 
 const DEFAULT_TARGET_CLASS = "全クラス共通";
@@ -121,7 +120,6 @@ const authService = new AuthService(CONFIG);
 const loginForm = document.querySelector("#loginForm");
 const forgotPasswordLink = document.querySelector(".forgot-link");
 const passwordHelpMessage = document.querySelector("#passwordHelpMessage");
-const demoButton = document.querySelector("#demoButton");
 const message = document.querySelector("#formMessage");
 let sheetContentPromise = null;
 let studentClassPromise = null;
@@ -162,7 +160,6 @@ if (loginForm) {
         return;
       }
 
-      sessionStorage.removeItem("emiLaboDemoMode");
       sessionStorage.setItem("emiLaboStudentId", result.user?.studentId || studentId);
       sessionStorage.setItem("emiLaboStudentClass", result.user?.studentClass || result.user?.className || "");
       sessionStorage.setItem("emiLaboUsageStatus", result.user?.usageStatus || "");
@@ -181,23 +178,7 @@ if (loginForm) {
   });
 }
 
-// 開発用デモ導線: 本番では enableDemoRoute を false にし、このボタン要素ごと削除できます。
-if (demoButton) {
-  demoButton.hidden = !CONFIG.enableDemoRoute;
-
-  demoButton.addEventListener("click", () => {
-    if (!CONFIG.enableDemoRoute) {
-      return;
-    }
-
-    clearStoredLoginState();
-    sessionStorage.setItem("emiLaboDemoMode", "true");
-    window.location.href = CONFIG.homePath;
-  });
-}
-
 function clearStoredLoginState() {
-  sessionStorage.removeItem("emiLaboDemoMode");
   sessionStorage.removeItem("emiLaboStudentId");
   sessionStorage.removeItem("emiLaboStudentClass");
   sessionStorage.removeItem("emiLaboUsageStatus");
