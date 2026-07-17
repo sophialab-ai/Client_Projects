@@ -1,5 +1,5 @@
 const CONFIG = {
-  spreadsheetEndpoint: "",
+  spreadsheetEndpoint: window.EMI_LABO_LOGIN_URL || window.EMI_LABO_GAS_URL || "",
   contentEndpoint: window.EMI_LABO_GAS_URL || "https://script.google.com/macros/s/AKfycbzluMNSk-kebmgiggou4-XuLKzDc7yCIQjJIyx9xamVO3OSMQnT_2DJQQ2E0H2lClmo4w/exec",
   homePath: "./home.html",
   enableDemoRoute: true,
@@ -101,7 +101,7 @@ class AuthService {
     const response = await fetch(this.config.spreadsheetEndpoint, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain;charset=utf-8",
       },
       body: JSON.stringify(credentials),
     });
@@ -157,12 +157,15 @@ if (loginForm) {
       const result = await authService.login({ studentId, password });
 
       if (!result.ok) {
+        clearStoredLoginState();
         message.textContent = result.message;
         return;
       }
 
+      sessionStorage.removeItem("emiLaboDemoMode");
       sessionStorage.setItem("emiLaboStudentId", result.user?.studentId || studentId);
       sessionStorage.setItem("emiLaboStudentClass", result.user?.studentClass || result.user?.className || "");
+      sessionStorage.setItem("emiLaboUsageStatus", result.user?.usageStatus || "");
       sessionStorage.removeItem(STUDENT_CLASS_FETCHED_KEY);
       sessionStorage.removeItem(SHEET_CONTENT_CACHE_KEY);
       sessionStorage.removeItem(SHEET_CONTENT_FETCHED_AT_KEY);
@@ -187,15 +190,21 @@ if (demoButton) {
       return;
     }
 
+    clearStoredLoginState();
     sessionStorage.setItem("emiLaboDemoMode", "true");
-    sessionStorage.removeItem("emiLaboStudentId");
-    sessionStorage.removeItem("emiLaboStudentClass");
-    sessionStorage.removeItem(STUDENT_CLASS_FETCHED_KEY);
-    sessionStorage.removeItem(SHEET_CONTENT_CACHE_KEY);
-    sessionStorage.removeItem(SHEET_CONTENT_FETCHED_AT_KEY);
-    sessionStorage.removeItem(SHEET_CONTENT_STUDENT_ID_KEY);
     window.location.href = CONFIG.homePath;
   });
+}
+
+function clearStoredLoginState() {
+  sessionStorage.removeItem("emiLaboDemoMode");
+  sessionStorage.removeItem("emiLaboStudentId");
+  sessionStorage.removeItem("emiLaboStudentClass");
+  sessionStorage.removeItem("emiLaboUsageStatus");
+  sessionStorage.removeItem(STUDENT_CLASS_FETCHED_KEY);
+  sessionStorage.removeItem(SHEET_CONTENT_CACHE_KEY);
+  sessionStorage.removeItem(SHEET_CONTENT_FETCHED_AT_KEY);
+  sessionStorage.removeItem(SHEET_CONTENT_STUDENT_ID_KEY);
 }
 
 function getGreetingByHour(hour) {
