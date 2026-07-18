@@ -14,6 +14,7 @@ const SHEET_CONTENT_STUDENT_ID_KEY = "emiLaboSheetContentStudentId";
 const STUDENT_CLASS_FETCHED_KEY = "emiLaboStudentClassFetched";
 const STUDENT_ROLE_STORAGE_KEY = "emiLaboStudentRole";
 const READ_NOTICES_SIGNATURE_KEY = "emiLaboReadNoticesSignature";
+const HIDDEN_SCHEDULE_TITLES = ["カレンダーの表示権限がないため、その予定を表示できません"];
 
 const HOME_CONTENT = {
   teacherMessage: "今日も笑顔で身体を動かしていきましょう😊🌸",
@@ -126,6 +127,7 @@ const message = document.querySelector("#formMessage");
 let sheetContentPromise = null;
 let studentClassPromise = null;
 let teacherMessageTimer = null;
+let scheduleCalendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
 if (forgotPasswordLink && passwordHelpMessage) {
   forgotPasswordLink.addEventListener("click", (event) => {
@@ -180,6 +182,23 @@ if (loginForm) {
     }
   });
 }
+
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-schedule-month]");
+
+  if (!button || getCurrentRoute() !== "schedule") {
+    return;
+  }
+
+  const direction = button.dataset.scheduleMonth === "next" ? 1 : -1;
+  scheduleCalendarMonth = new Date(
+    scheduleCalendarMonth.getFullYear(),
+    scheduleCalendarMonth.getMonth() + direction,
+    1
+  );
+
+  renderContentRoute();
+});
 
 function clearStoredLoginState() {
   sessionStorage.removeItem("emiLaboStudentId");
@@ -603,10 +622,6 @@ function setHomeView(isHome) {
 }
 
 function buildContentCard(row, route) {
-  if (route.dataKey === "schedules") {
-    return buildScheduleCard(row, route);
-  }
-
   const title = getFirstAvailableValue(row, route.titleKeys) || "タイトル未設定";
   const body = getFirstAvailableValue(row, route.bodyKeys);
   const url = getFirstAvailableValue(row, route.linkKeys);
@@ -630,16 +645,136 @@ function buildContentCard(row, route) {
   `;
 }
 
-function buildScheduleCard(row, route) {
-  const title = getFirstAvailableValue(row, route.titleKeys) || "タイトル未設定";
-  const date = getFirstAvailableValue(row, route.dateKeys);
-  const time = getFirstAvailableValue(row, route.timeKeys);
-  const scheduleText = [date, time].filter(Boolean).join(" ");
+function getScheduleDateKey(row) {
+  const dateText = getFirstAvailableValue(row, ["date", "日付"]);
+  const normalizedDate = dateText.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+
+  if (normalizedDate) {
+    return [
+      normalizedDate[1],
+      normalizedDate[2].padStart(2, "0"),
+      normalizedDate[3].padStart(2, "0"),
+    ].join("-");
+  }
+
+  const startText = getFirstAvailableValue(row, ["start", "開始", "開始日時"]);
+  const parsedDate = new Date(startText);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "";
+  }
+
+  return [
+    parsedDate.getFullYear(),
+    String(parsedDate.getMonth() + 1).padStart(2, "0"),
+    String(parsedDate.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function formatScheduleCalendarTitle(date) {
+  return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+}
+
+function formatCalendarDateKey(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function getScheduleStartTime(row) {
+  const startText = getFirstAvailableValue(row, ["start", "開始", "開始日時"]);
+  const parsedDate = new Date(startText);
+
+  if (!Number.isNaN(parsedDate.getTime())) {
+    return parsedDate.getTime();
+  }
+
+  return getFirstAvailableValue(row, ["time", "時間"]);
+}
+
+function buildScheduleCalendar(rows, route) {
+  const visibleRows = rows.filter((row) => {
+    const title = getFirstAvailableValue(row, route.titleKeys);
+    return !HIDDEN_SCHEDULE_TITLES.includes(title);
+  });
+  const year = scheduleCalendarMonth.getFullYear();
+  const month = scheduleCalendarMonth.getMonth();
+  const firstDate = new Date(year, month, 1);
+  const calendarStart = new Date(year, month, 1 - firstDate.getDay());
+  const todayKey = formatCalendarDateKey(new Date());
+  const weekdayLabels = ["日", "月", "火", "水", "木", "金", "土"];
+  const eventsByDate = visibleRows.reduce((groups, row) => {
+    const dateKey = getScheduleDateKey(row);
+
+    if (!dateKey) {
+      return groups;
+    }
+
+    if (!groups[dateKey]) {
+      groups[dateKey] = [];
+    }
+
+    groups[dateKey].push(row);
+    return groups;
+  }, {});
+
+  Object.keys(eventsByDate).forEach((dateKey) => {
+    eventsByDate[dateKey].sort((a, b) => {
+      const startA = getScheduleStartTime(a);
+      const startB = getScheduleStartTime(b);
+
+      if (typeof startA === "number" && typeof startB === "number") {
+        return startA - startB;
+      }
+
+      return String(startA).localeCompare(String(startB), "ja");
+    });
+  });
+
+  const dayCells = Array.from({ length: 42 }, (_, index) => {
+    const cellDate = new Date(calendarStart);
+    cellDate.setDate(calendarStart.getDate() + index);
+
+    const dateKey = formatCalendarDateKey(cellDate);
+    const dayEvents = eventsByDate[dateKey] || [];
+    const isOtherMonth = cellDate.getMonth() !== month;
+    const isToday = dateKey === todayKey;
+    const dayNumber = cellDate.getDate();
+    const eventHtml = dayEvents.map((eventRow) => {
+      const title = getFirstAvailableValue(eventRow, route.titleKeys) || "予定";
+      const time = getFirstAvailableValue(eventRow, route.timeKeys);
+
+      return `
+        <div class="schedule-calendar-event">
+          ${time ? `<span class="schedule-calendar-event-time">${escapeHtml(time)}</span>` : ""}
+          <span class="schedule-calendar-event-title">${escapeHtml(title)}</span>
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <div class="schedule-calendar-day${isOtherMonth ? " is-other-month" : ""}${isToday ? " is-today" : ""}">
+        <span class="schedule-calendar-date">${dayNumber}</span>
+        ${eventHtml ? `<div class="schedule-calendar-events">${eventHtml}</div>` : ""}
+      </div>
+    `;
+  }).join("");
 
   return `
-    <div class="menu-card schedule-card" role="listitem">
-      ${scheduleText ? `<span class="section-label">${escapeHtml(scheduleText)}</span>` : ""}
-      <span class="menu-title">${escapeHtml(title)}</span>
+    <div class="schedule-calendar" role="region" aria-label="${escapeHtml(route.title)}">
+      <div class="schedule-calendar-header">
+        <button class="schedule-calendar-button" type="button" data-schedule-month="prev" aria-label="前月へ移動">‹</button>
+        <span class="schedule-calendar-current">${escapeHtml(formatScheduleCalendarTitle(scheduleCalendarMonth))}</span>
+        <button class="schedule-calendar-button" type="button" data-schedule-month="next" aria-label="翌月へ移動">›</button>
+      </div>
+      <div class="schedule-calendar-weekdays" aria-hidden="true">
+        ${weekdayLabels.map((label) => `<span>${label}</span>`).join("")}
+      </div>
+      <div class="schedule-calendar-grid">
+        ${dayCells}
+      </div>
     </div>
   `;
 }
@@ -685,6 +820,11 @@ async function renderContentRoute() {
 
     const sourceRows = payload?.data?.[route.dataKey] || [];
     let rows = Array.isArray(sourceRows) ? filterRowsByRoute(sourceRows, route) : [];
+
+    if (route.dataKey === "schedules") {
+      contentList.innerHTML = buildScheduleCalendar(rows, route);
+      return;
+    }
 
     if (!Array.isArray(rows) || rows.length === 0) {
       contentList.innerHTML = `<div class="menu-card" role="status"><span class="menu-title">${escapeHtml(route.emptyText)}</span></div>`;
