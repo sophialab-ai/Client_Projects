@@ -1,12 +1,11 @@
 :root {
-  --pink: #e95583;
-  --pink-deep: #d83b70;
+  --orange: #ff7a3d;
+  --orange-deep: #f04a13;
   --white: #ffffff;
-  --ink: #35262c;
-  --muted: #8a747c;
-  --home-bg: #fff7fa;
-  --line: rgba(233, 85, 131, 0.22);
-  --shadow: 0 18px 46px rgba(76, 34, 48, 0.2);
+  --ink: #2f2925;
+  --muted: #7c726c;
+  --line: rgba(255, 122, 61, 0.25);
+  --shadow: 0 18px 46px rgba(93, 58, 35, 0.18);
 }
 
 * {
@@ -23,7 +22,7 @@ body {
 body {
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", sans-serif;
-  background: #fce9ef;
+  background: #fff8f1;
 }
 
 button,
@@ -58,14 +57,14 @@ button {
   z-index: 0;
   object-fit: cover;
   object-position: center center;
-  background: #f8dfe7;
+  background: #fff3e8;
 }
 
 .video-overlay {
   z-index: 1;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.04) 28%, rgba(255, 255, 255, 0.02) 58%, rgba(255, 229, 238, 0.42) 100%),
-    linear-gradient(0deg, rgba(64, 28, 40, 0.12), rgba(64, 28, 40, 0.02));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.08) 28%, rgba(255, 255, 255, 0.04) 58%, rgba(255, 244, 232, 0.5) 100%),
+    linear-gradient(0deg, rgba(67, 43, 28, 0.11), rgba(67, 43, 28, 0.02));
   pointer-events: none;
 }
 
@@ -87,7 +86,7 @@ h1 {
   font-weight: 800;
   line-height: 1.25;
   letter-spacing: 0;
-  text-shadow: 0 2px 16px rgba(67, 31, 42, 0.42), 0 1px 2px rgba(67, 31, 42, 0.24);
+  text-shadow: 0 2px 16px rgba(57, 36, 24, 0.38), 0 1px 2px rgba(57, 36, 24, 0.22);
 }
 
 .login-panel {
@@ -133,18 +132,18 @@ h1 {
 }
 
 .field input::placeholder {
-  color: #b8a4ac;
+  color: #b6a69c;
 }
 
 .field input:focus {
-  border-color: rgba(233, 85, 131, 0.74);
+  border-color: rgba(255, 122, 61, 0.72);
   background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 0 4px rgba(233, 85, 131, 0.13);
+  box-shadow: 0 0 0 4px rgba(255, 122, 61, 0.14);
 }
 
 .form-message {
   margin: 0;
-  color: var(--pink-deep);
+  color: var(--orange-deep);
   font-size: 11px;
   font-weight: 700;
   line-height: 1.3;
@@ -162,15 +161,15 @@ h1 {
   border-radius: 999px;
   color: var(--white);
   font-weight: 800;
-  background: linear-gradient(135deg, var(--pink), var(--pink-deep));
-  box-shadow: 0 14px 28px rgba(216, 59, 112, 0.28);
+  background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+  box-shadow: 0 14px 28px rgba(240, 74, 19, 0.24);
   cursor: pointer;
   transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
 }
 
 .login-button:active {
   transform: translateY(1px) scale(0.99);
-  box-shadow: 0 8px 18px rgba(216, 59, 112, 0.24);
+  box-shadow: 0 8px 18px rgba(240, 74, 19, 0.22);
 }
 
 .login-button:disabled {
@@ -181,7 +180,7 @@ h1 {
 .forgot-link {
   display: block;
   margin-top: 0;
-  color: var(--pink-deep);
+  color: var(--orange-deep);
   font-size: 12px;
   font-weight: 700;
   text-align: center;
@@ -190,7 +189,7 @@ h1 {
 
 .forgot-link:focus-visible {
   border-radius: 8px;
-  outline: 3px solid rgba(233, 85, 131, 0.22);
+  outline: 3px solid rgba(255, 122, 61, 0.22);
   outline-offset: 4px;
 }
 
@@ -245,7 +244,7 @@ h1 {
 .home-page {
   min-height: 100svh;
   background:
-    linear-gradient(180deg, #fff9fb 0%, #fff3f7 46%, #ffffff 100%);
+    linear-gradient(180deg, #ffffff 0%, #fffaf5 52%, #ffffff 100%);
 }
 
 .home-shell {
@@ -261,7 +260,7 @@ h1 {
 
 .home-kicker {
   margin: 0 0 4px;
-  color: var(--pink-deep);
+  color: var(--orange-deep);
   font-size: 13px;
   font-weight: 800;
 }
@@ -282,7 +281,7 @@ h1 {
   border: 1px solid rgba(255, 255, 255, 0.82);
   border-radius: 24px;
   background: var(--white);
-  box-shadow: 0 18px 42px rgba(112, 65, 79, 0.16);
+  box-shadow: 0 18px 42px rgba(93, 58, 35, 0.13);
 }
 
 .teacher-photo-card img {
@@ -309,10 +308,10 @@ h1 {
 .teacher-message {
   margin-top: 4px;
   padding: 17px 18px;
-  border: 1px solid rgba(233, 85, 131, 0.14);
+  border: 1px solid rgba(255, 122, 61, 0.16);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 12px 30px rgba(112, 65, 79, 0.1);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 30px rgba(93, 58, 35, 0.09);
 }
 
 .teacher-message-awaiting {
@@ -328,7 +327,7 @@ h1 {
 
 .section-label {
   margin: 0 0 8px;
-  color: var(--pink-deep);
+  color: var(--orange-deep);
   font-size: 13px;
   font-weight: 800;
 }
@@ -375,20 +374,20 @@ h1 {
   align-content: center;
   justify-items: center;
   gap: 7px;
-  border: 1px solid rgba(233, 85, 131, 0.13);
+  border: 1px solid rgba(255, 122, 61, 0.15);
   border-radius: 20px;
   padding: 14px 10px;
   color: var(--ink);
   text-align: center;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 24px rgba(112, 65, 79, 0.09);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 24px rgba(93, 58, 35, 0.08);
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 .menu-card:active {
   transform: translateY(1px) scale(0.99);
-  box-shadow: 0 7px 18px rgba(112, 65, 79, 0.08);
+  box-shadow: 0 7px 18px rgba(93, 58, 35, 0.07);
 }
 
 .menu-icon {
@@ -429,18 +428,18 @@ h1 {
 .mypage-coming-soon {
   grid-column: 1 / -1;
   width: 100%;
-  border: 1px solid rgba(233, 85, 131, 0.13);
+  border: 1px solid rgba(255, 122, 61, 0.15);
   border-radius: 20px;
   padding: 24px 18px;
   color: var(--ink);
   text-align: center;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 24px rgba(112, 65, 79, 0.09);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 24px rgba(93, 58, 35, 0.08);
 }
 
 .mypage-coming-soon h3 {
   margin: 0 0 14px;
-  color: var(--pink-deep);
+  color: var(--orange-deep);
   font-size: 18px;
   font-weight: 800;
   line-height: 1.4;
@@ -462,7 +461,7 @@ h1 {
   width: 100%;
   margin: 34px 0 8px;
   padding: 18px 0 4px;
-  color: #b8aeb3;
+  color: #b6aca5;
   font-size: 11px;
   font-weight: 700;
   line-height: 1.6;
@@ -495,10 +494,10 @@ h1 {
   width: min(100%, 430px);
   margin: 0 auto;
   padding: 8px 8px max(8px, env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(233, 85, 131, 0.12);
+  border-top: 1px solid rgba(255, 122, 61, 0.15);
   border-radius: 22px 22px 0 0;
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 -10px 30px rgba(112, 65, 79, 0.1);
+  box-shadow: 0 -10px 30px rgba(93, 58, 35, 0.09);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -517,8 +516,8 @@ h1 {
 }
 
 .bottom-nav-item.is-active {
-  color: var(--pink-deep);
-  background: #fff0f5;
+  color: var(--orange-deep);
+  background: #fff1e7;
 }
 
 .nav-icon {
