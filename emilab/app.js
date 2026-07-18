@@ -43,7 +43,11 @@ const CONTENT_ROUTES = {
   },
   schedule: {
     title: "レッスンスケジュール",
-    isGoogleCalendar: true,
+    dataKey: "schedules",
+    emptyText: "公開中のレッスンスケジュールはまだありません。",
+    titleKeys: ["title", "タイトル"],
+    dateKeys: ["date", "日付"],
+    timeKeys: ["time", "時間"],
   },
   notices: {
     title: "お知らせ",
@@ -113,7 +117,6 @@ class AuthService {
 }
 
 const authService = new AuthService(CONFIG);
-const GOOGLE_CALENDAR_EMBED_SRC = "https://calendar.google.com/calendar/embed?src=emishiseilab@gmail.com&ctz=Asia%2FTokyo";
 const loginForm = document.querySelector("#loginForm");
 const forgotPasswordLink = document.querySelector(".forgot-link");
 const passwordHelpMessage = document.querySelector("#passwordHelpMessage");
@@ -498,19 +501,6 @@ function buildAppSignature() {
   `;
 }
 
-function buildGoogleCalendarFrame() {
-  return `
-    <iframe
-      class="google-calendar-frame"
-      src="${GOOGLE_CALENDAR_EMBED_SRC}"
-      title="えみラボ体操教室 スケジュール"
-      loading="lazy"
-      frameborder="0"
-      scrolling="no">
-    </iframe>
-  `;
-}
-
 function updateTeacherMessage(text, shouldFadeIn = false) {
   const teacherMessageText = document.querySelector("#teacherMessageText");
   const teacherMessageCard = document.querySelector(".teacher-message");
@@ -588,6 +578,10 @@ function setHomeView(isHome) {
 }
 
 function buildContentCard(row, route) {
+  if (route.dataKey === "schedules") {
+    return buildScheduleCard(row, route);
+  }
+
   const title = getFirstAvailableValue(row, route.titleKeys) || "タイトル未設定";
   const body = getFirstAvailableValue(row, route.bodyKeys);
   const url = getFirstAvailableValue(row, route.linkKeys);
@@ -611,6 +605,20 @@ function buildContentCard(row, route) {
   `;
 }
 
+function buildScheduleCard(row, route) {
+  const title = getFirstAvailableValue(row, route.titleKeys) || "タイトル未設定";
+  const date = getFirstAvailableValue(row, route.dateKeys);
+  const time = getFirstAvailableValue(row, route.timeKeys);
+  const scheduleText = [date, time].filter(Boolean).join(" ");
+
+  return `
+    <div class="menu-card schedule-card" role="listitem">
+      ${scheduleText ? `<span class="section-label">${escapeHtml(scheduleText)}</span>` : ""}
+      <span class="menu-title">${escapeHtml(title)}</span>
+    </div>
+  `;
+}
+
 async function renderContentRoute() {
   const routeKey = getCurrentRoute();
   const route = CONTENT_ROUTES[routeKey];
@@ -627,11 +635,6 @@ async function renderContentRoute() {
   setHomeView(false);
   contentTitle.textContent = route.title;
 
-  if (route.isGoogleCalendar) {
-    contentList.innerHTML = buildGoogleCalendarFrame();
-    return;
-  }
-
   contentList.innerHTML = '<div class="menu-card" role="status"><span class="menu-title">読み込み中です</span></div>';
 
   if (route.isMyPage) {
@@ -643,6 +646,11 @@ async function renderContentRoute() {
     const payload = await getSheetContent();
     if (CLASS_FILTERED_DATA_KEYS.includes(route.dataKey)) {
       await ensureStudentClass();
+    }
+
+    if (route.dataKey === "schedules" && payload?.data?.scheduleError) {
+      contentList.innerHTML = `<div class="menu-card" role="status"><span class="menu-title">${escapeHtml(payload.data.scheduleError)}</span></div>`;
+      return;
     }
 
     if (route.dataKey === "notices") {
