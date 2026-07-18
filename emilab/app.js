@@ -697,7 +697,7 @@ function getScheduleStartTime(row) {
 }
 
 function formatScheduleDisplayTime(time) {
-  return String(time || "").split("〜")[0].trim();
+  return String(time || "").split(/[〜～~]/)[0].trim();
 }
 
 function buildScheduleCalendar(rows, route) {
