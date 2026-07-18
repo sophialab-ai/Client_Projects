@@ -696,6 +696,10 @@ function getScheduleStartTime(row) {
   return getFirstAvailableValue(row, ["time", "時間"]);
 }
 
+function formatScheduleDisplayTime(time) {
+  return String(time || "").split("〜")[0].trim();
+}
+
 function buildScheduleCalendar(rows, route) {
   const visibleRows = rows.filter((row) => {
     const title = getFirstAvailableValue(row, route.titleKeys);
@@ -746,7 +750,7 @@ function buildScheduleCalendar(rows, route) {
     const dayNumber = cellDate.getDate();
     const eventHtml = dayEvents.map((eventRow) => {
       const title = getFirstAvailableValue(eventRow, route.titleKeys) || "予定";
-      const time = getFirstAvailableValue(eventRow, route.timeKeys);
+      const time = formatScheduleDisplayTime(getFirstAvailableValue(eventRow, route.timeKeys));
 
       return `
         <div class="schedule-calendar-event">
