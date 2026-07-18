@@ -5,12 +5,14 @@ const CONFIG = {
 };
 
 const DEFAULT_TARGET_CLASS = "全クラス共通";
+const TEACHER_ROLE = "先生";
 const CLASS_FILTERED_DATA_KEYS = ["lessonVideos", "voiceLessons"];
 const SHEET_CONTENT_CACHE_KEY = "emiLaboSheetContent";
 const SHEET_CONTENT_FETCHED_AT_KEY = "emiLaboSheetContentFetchedAt";
 const SHEET_CONTENT_CACHE_DURATION_MS = 120 * 1000;
 const SHEET_CONTENT_STUDENT_ID_KEY = "emiLaboSheetContentStudentId";
 const STUDENT_CLASS_FETCHED_KEY = "emiLaboStudentClassFetched";
+const STUDENT_ROLE_STORAGE_KEY = "emiLaboStudentRole";
 const READ_NOTICES_SIGNATURE_KEY = "emiLaboReadNoticesSignature";
 
 const HOME_CONTENT = {
@@ -162,6 +164,7 @@ if (loginForm) {
 
       sessionStorage.setItem("emiLaboStudentId", result.user?.studentId || studentId);
       sessionStorage.setItem("emiLaboStudentClass", result.user?.studentClass || result.user?.className || "");
+      sessionStorage.setItem(STUDENT_ROLE_STORAGE_KEY, result.user?.studentRole || result.user?.role || "");
       sessionStorage.setItem("emiLaboUsageStatus", result.user?.usageStatus || "");
       sessionStorage.removeItem(STUDENT_CLASS_FETCHED_KEY);
       sessionStorage.removeItem(SHEET_CONTENT_CACHE_KEY);
@@ -181,6 +184,7 @@ if (loginForm) {
 function clearStoredLoginState() {
   sessionStorage.removeItem("emiLaboStudentId");
   sessionStorage.removeItem("emiLaboStudentClass");
+  sessionStorage.removeItem(STUDENT_ROLE_STORAGE_KEY);
   sessionStorage.removeItem("emiLaboUsageStatus");
   sessionStorage.removeItem(STUDENT_CLASS_FETCHED_KEY);
   sessionStorage.removeItem(SHEET_CONTENT_CACHE_KEY);
@@ -220,6 +224,7 @@ async function fetchSheetContent({ includeStudentClass = true } = {}) {
   }
 
   updateStoredStudentClass(payload);
+  updateStoredStudentRole(payload);
 
   if (includeStudentClass && studentId) {
     sessionStorage.setItem(STUDENT_CLASS_FETCHED_KEY, "true");
@@ -346,6 +351,14 @@ function getStoredStudentClass() {
   return String(sessionStorage.getItem("emiLaboStudentClass") || "").trim();
 }
 
+function getStoredStudentRole() {
+  return String(sessionStorage.getItem(STUDENT_ROLE_STORAGE_KEY) || "").trim();
+}
+
+function isTeacherAccount() {
+  return getStoredStudentRole() === TEACHER_ROLE;
+}
+
 function updateStoredStudentClass(payload) {
   const studentClass = String(payload?.student?.studentClass || "").trim();
 
@@ -354,12 +367,24 @@ function updateStoredStudentClass(payload) {
   }
 }
 
+function updateStoredStudentRole(payload) {
+  const studentRole = String(payload?.student?.studentRole || payload?.student?.role || "").trim();
+
+  if (studentRole) {
+    sessionStorage.setItem(STUDENT_ROLE_STORAGE_KEY, studentRole);
+  }
+}
+
 function normalizeTargetClass(row) {
   // 旧データや列未設定の行で既存表示が急に消えないよう、未指定は全クラス共通扱いにします。
   return String(row?.targetClass || row?.["対象クラス"] || DEFAULT_TARGET_CLASS).trim() || DEFAULT_TARGET_CLASS;
 }
 
-function shouldShowClassTargetedRow(row, studentClass) {
+function shouldShowClassTargetedRow(row, studentClass, isTeacher = false) {
+  if (isTeacher) {
+    return true;
+  }
+
   const targetClass = normalizeTargetClass(row);
 
   if (targetClass === DEFAULT_TARGET_CLASS) {
@@ -380,7 +405,7 @@ function filterRowsByRoute(rows, route) {
 
   // レッスン動画・ボイスレッスンだけ、対象クラスで表示を絞ります。
   const studentClass = getStoredStudentClass();
-  return rows.filter((row) => shouldShowClassTargetedRow(row, studentClass));
+  return rows.filter((row) => shouldShowClassTargetedRow(row, studentClass, isTeacherAccount()));
 }
 
 function getTeacherMessageFromSheet(payload) {
