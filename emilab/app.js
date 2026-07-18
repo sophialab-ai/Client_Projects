@@ -23,7 +23,7 @@ const HOME_CONTENT = {
     { icon: "🎤", label: "ボイスレッスン", href: "#voice-lessons" },
     { icon: "📅", label: "スケジュール", href: "#schedule" },
     { icon: "🗒️", label: "お知らせ", href: "#notices" },
-    { icon: "👤", label: "マイページ", href: "#mypage" },
+    { icon: "💬", label: "チャットルーム", href: "./chat.html" },
   ],
 };
 

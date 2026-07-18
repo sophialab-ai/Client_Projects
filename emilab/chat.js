@@ -3,6 +3,7 @@ const CHAT_CONFIG = {
 };
 
 const CHAT_REACTIONS = ["❤️", "👏", "😊", "🎉"];
+const STUDENT_AVATAR_CANDIDATES = ["🌸", "🐰", "🌻", "🐱", "⭐", "🐧", "🍀", "🐶"];
 const TEACHER_ROLE = "先生";
 
 const chatForm = document.querySelector("#chatForm");
@@ -85,12 +86,10 @@ function formatChatDate(value) {
   }).format(date);
 }
 
-function getAvatar(post) {
-  if (post.isTeacher || post.role === TEACHER_ROLE) {
-    return "先";
-  }
-
-  return "🌸";
+function getStudentAvatar(previousAvatar = "") {
+  const candidates = STUDENT_AVATAR_CANDIDATES.filter((avatar) => avatar !== previousAvatar);
+  const pool = candidates.length > 0 ? candidates : STUDENT_AVATAR_CANDIDATES;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function buildReactionButtons(postId) {
@@ -101,7 +100,7 @@ function buildReactionButtons(postId) {
   `).join("");
 }
 
-function buildPostCard(post) {
+function buildPostCard(post, avatar) {
   const isTeacher = post.isTeacher || post.role === TEACHER_ROLE;
   const canDelete = Boolean(post.canDelete);
   const deleteButton = canDelete
@@ -111,7 +110,7 @@ function buildPostCard(post) {
   return `
     <article class="chat-post-card${isTeacher ? " is-teacher" : ""}">
       <div class="chat-post-header">
-        <span class="chat-avatar" aria-hidden="true">${escapeHtml(getAvatar(post))}</span>
+        <span class="chat-avatar" aria-hidden="true">${escapeHtml(avatar)}</span>
         <div class="chat-author">
           <span class="chat-name">${escapeHtml(post.name || "えみラボ生")}</span>
           <span class="chat-meta">${escapeHtml(formatChatDate(post.createdAt))}</span>
@@ -128,6 +127,7 @@ function buildPostCard(post) {
 
 function renderChat(payload) {
   const posts = Array.isArray(payload.posts) ? payload.posts : [];
+  let previousStudentAvatar = "";
 
   if (payload.user?.studentName) {
     sessionStorage.setItem("emiLaboStudentName", payload.user.studentName);
@@ -142,7 +142,17 @@ function renderChat(payload) {
     return;
   }
 
-  chatTimeline.innerHTML = posts.map(buildPostCard).join("");
+  chatTimeline.innerHTML = posts.map((post) => {
+    const isTeacher = post.isTeacher || post.role === TEACHER_ROLE;
+    const avatar = isTeacher ? "先" : getStudentAvatar(previousStudentAvatar);
+    const card = buildPostCard(post, avatar);
+
+    if (!isTeacher) {
+      previousStudentAvatar = avatar;
+    }
+
+    return card;
+  }).join("");
 }
 
 async function loadChat() {
