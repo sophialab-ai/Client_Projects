@@ -165,6 +165,7 @@ if (loginForm) {
       }
 
       sessionStorage.setItem("emiLaboStudentId", result.user?.studentId || studentId);
+      sessionStorage.setItem("emiLaboStudentName", result.user?.studentName || result.user?.name || "");
       sessionStorage.setItem("emiLaboStudentClass", result.user?.studentClass || result.user?.className || "");
       sessionStorage.setItem(STUDENT_ROLE_STORAGE_KEY, result.user?.studentRole || result.user?.role || "");
       sessionStorage.setItem("emiLaboUsageStatus", result.user?.usageStatus || "");
@@ -202,6 +203,7 @@ document.addEventListener("click", (event) => {
 
 function clearStoredLoginState() {
   sessionStorage.removeItem("emiLaboStudentId");
+  sessionStorage.removeItem("emiLaboStudentName");
   sessionStorage.removeItem("emiLaboStudentClass");
   sessionStorage.removeItem(STUDENT_ROLE_STORAGE_KEY);
   sessionStorage.removeItem("emiLaboUsageStatus");

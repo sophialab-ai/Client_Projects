@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>えみラボ体操教室 チャットルーム</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" type="image/png" href="./emilab_icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+    <meta name="theme-color" content="#fff3f7" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./chat.css" />
+  </head>
+  <body class="home-page chat-page">
+    <main class="home-shell chat-shell" aria-label="チャットルーム">
+      <header class="home-header">
+        <p class="home-kicker">えみラボ体操教室</p>
+        <h1>チャットルーム</h1>
+      </header>
+
+      <section class="chat-composer" aria-labelledby="chatComposerTitle">
+        <h2 id="chatComposerTitle">投稿する</h2>
+        <form class="chat-form" id="chatForm">
+          <label class="chat-field">
+            <span>本文</span>
+            <textarea id="chatBody" name="body" rows="3" maxlength="500" placeholder="みんなに伝えたいことを書いてください"></textarea>
+          </label>
+          <p class="chat-message" id="chatMessage" role="status" aria-live="polite"></p>
+          <button class="login-button chat-submit-button" type="submit">送信</button>
+        </form>
+      </section>
+
+      <section class="chat-timeline-section" aria-labelledby="chatTimelineTitle">
+        <h2 id="chatTimelineTitle">みんなの投稿</h2>
+        <div class="chat-timeline" id="chatTimeline" aria-live="polite">
+          <div class="chat-empty-card" role="status">読み込み中です</div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="下部ナビゲーション">
+      <a class="bottom-nav-item" href="./home.html" data-route="home">
+        <span class="nav-icon" aria-hidden="true">🏠</span>
+        <span>ホーム</span>
+      </a>
+      <a class="bottom-nav-item" href="./home.html#lesson-videos" data-route="lesson-videos">
+        <span class="nav-icon" aria-hidden="true">🎥</span>
+        <span>動画</span>
+      </a>
+      <a class="bottom-nav-item" href="./home.html#voice-lessons" data-route="voice-lessons">
+        <span class="nav-icon" aria-hidden="true">🎤</span>
+        <span>ボイス</span>
+      </a>
+      <a class="bottom-nav-item" href="./home.html#schedule" data-route="schedule">
+        <span class="nav-icon" aria-hidden="true">📅</span>
+        <span>スケジュール</span>
+      </a>
+      <a class="bottom-nav-item is-active" href="./chat.html" data-route="chat" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">💬</span>
+        <span>チャット</span>
+      </a>
+      <a class="bottom-nav-item" href="./home.html#mypage" data-route="mypage">
+        <span class="nav-icon" aria-hidden="true">👤</span>
+        <span>マイページ</span>
+      </a>
+    </nav>
+
+    <script>
+      window.EMI_LABO_GAS_URL = "https://script.google.com/macros/s/AKfycbzluMNSk-kebmgiggou4-XuLKzDc7yCIQjJIyx9xamVO3OSMQnT_2DJQQ2E0H2lClmo4w/exec";
+    </script>
+    <script src="./chat.js"></script>
+  </body>
+</html>
