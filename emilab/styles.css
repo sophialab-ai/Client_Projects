@@ -401,6 +401,48 @@ h1 {
   line-height: 1.35;
 }
 
+.voice-card {
+  grid-column: 1 / -1;
+  justify-items: stretch;
+  text-align: center;
+}
+
+.voice-card .menu-title,
+.voice-card .section-label {
+  justify-self: center;
+}
+
+.voice-audio-player {
+  width: 100%;
+  min-width: 0;
+  margin-top: 4px;
+}
+
+.voice-audio-fallback {
+  justify-self: stretch;
+  margin: 2px 0 0;
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+  background: #fff7f0;
+}
+
+.voice-audio-fallback[hidden] {
+  display: none;
+}
+
+.voice-open-link {
+  justify-self: center;
+  margin-top: 2px;
+  color: var(--orange-deep);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
 .home-menu-grid .menu-title {
   display: inline-flex;
   align-items: center;

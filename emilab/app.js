@@ -201,6 +201,21 @@ document.addEventListener("click", (event) => {
   renderContentRoute();
 });
 
+document.addEventListener("error", (event) => {
+  const audioPlayer = event.target;
+
+  if (!(audioPlayer instanceof HTMLAudioElement) || !audioPlayer.classList.contains("voice-audio-player")) {
+    return;
+  }
+
+  const voiceCard = audioPlayer.closest(".voice-card");
+  const fallbackMessage = voiceCard?.querySelector(".voice-audio-fallback");
+
+  if (fallbackMessage) {
+    fallbackMessage.hidden = false;
+  }
+}, true);
+
 function clearStoredLoginState() {
   sessionStorage.removeItem("emiLaboStudentId");
   sessionStorage.removeItem("emiLaboStudentName");
@@ -630,6 +645,10 @@ function buildContentCard(row, route) {
   const titleHtml = `<span class="menu-title">${escapeHtml(title)}</span>`;
   const bodyHtml = body ? `<span class="section-label">${escapeHtml(body)}</span>` : "";
 
+  if (route.dataKey === "voiceLessons" && url) {
+    return buildVoiceLessonCard(title, bodyHtml, url);
+  }
+
   if (url) {
     return `
       <a class="menu-card" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(title)}を開く">
@@ -643,6 +662,52 @@ function buildContentCard(row, route) {
     <div class="menu-card" role="listitem">
       ${titleHtml}
       ${bodyHtml}
+    </div>
+  `;
+}
+
+function getGoogleDriveFileId(url) {
+  const text = String(url || "").trim();
+  const filePathMatch = text.match(/\/file\/d\/([^/]+)/);
+
+  if (filePathMatch) {
+    return filePathMatch[1];
+  }
+
+  try {
+    const parsedUrl = new URL(text);
+    return parsedUrl.searchParams.get("id") || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function buildGoogleDriveAudioUrl(url) {
+  const fileId = getGoogleDriveFileId(url);
+
+  if (!fileId) {
+    return url;
+  }
+
+  return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
+}
+
+function buildVoiceLessonCard(title, bodyHtml, url) {
+  const audioUrl = buildGoogleDriveAudioUrl(url);
+
+  return `
+    <div class="menu-card voice-card" role="listitem">
+      <span class="menu-title">${escapeHtml(title)}</span>
+      ${bodyHtml}
+      <audio class="voice-audio-player" controls preload="none" src="${escapeHtml(audioUrl)}">
+        お使いのブラウザでは音声を再生できません。
+      </audio>
+      <p class="voice-audio-fallback" hidden>
+        この端末ではアプリ内再生ができない場合があります。下の「音声を開く」から再生してください。
+      </p>
+      <a class="voice-open-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
+        音声を開く
+      </a>
     </div>
   `;
 }
