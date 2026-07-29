@@ -204,9 +204,6 @@ Ver.1.1
 （今後更新）
 
 
-
-
-
 ## システム仕様
 
 ・Google Apps Script連携
@@ -214,3 +211,15 @@ Ver.1.1
 ・生徒ログイン
 ・クラス別配信
 ・sessionStorage利用
+
+
+
+
+## Standard History
+
+### Ver.1（2026-07-29）
+- PWA対応
+- manifest.json追加
+- apple-touch-icon対応
+- icon-192 / icon-512追加
+- iPhone・Androidホーム画面追加対応
