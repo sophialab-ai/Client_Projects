@@ -202,3 +202,15 @@ Ver.1.0
 
 Ver.1.1
 （今後更新）
+
+
+
+
+
+## システム仕様
+
+・Google Apps Script連携
+・Googleスプレッドシート管理
+・生徒ログイン
+・クラス別配信
+・sessionStorage利用
