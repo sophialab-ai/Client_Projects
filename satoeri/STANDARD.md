@@ -78,3 +78,12 @@ PWA対応のみ追加実装する。
 - manifest.json 追加
 - PWA対応
 - iPhone／Android ホーム画面アイコン対応
+
+## Standard History
+
+### Ver.1（2026-07-29）
+- PWA対応
+- manifest.json追加
+- apple-touch-icon対応
+- icon-192 / icon-512追加
+- iPhone・Androidホーム画面追加対応
