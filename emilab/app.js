@@ -201,21 +201,6 @@ document.addEventListener("click", (event) => {
   renderContentRoute();
 });
 
-document.addEventListener("error", (event) => {
-  const audioPlayer = event.target;
-
-  if (!(audioPlayer instanceof HTMLAudioElement) || !audioPlayer.classList.contains("voice-audio-player")) {
-    return;
-  }
-
-  const voiceCard = audioPlayer.closest(".voice-card");
-  const fallbackMessage = voiceCard?.querySelector(".voice-audio-fallback");
-
-  if (fallbackMessage) {
-    fallbackMessage.hidden = false;
-  }
-}, true);
-
 function clearStoredLoginState() {
   sessionStorage.removeItem("emiLaboStudentId");
   sessionStorage.removeItem("emiLaboStudentName");
@@ -682,28 +667,32 @@ function getGoogleDriveFileId(url) {
   }
 }
 
-function buildGoogleDriveAudioUrl(url) {
+function buildGoogleDrivePreviewUrl(url) {
   const fileId = getGoogleDriveFileId(url);
 
   if (!fileId) {
     return url;
   }
 
-  return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
+  return `https://drive.google.com/file/d/${encodeURIComponent(fileId)}/preview`;
 }
 
 function buildVoiceLessonCard(title, bodyHtml, url) {
-  const audioUrl = buildGoogleDriveAudioUrl(url);
+  const previewUrl = buildGoogleDrivePreviewUrl(url);
 
   return `
     <div class="menu-card voice-card" role="listitem">
       <span class="menu-title">${escapeHtml(title)}</span>
       ${bodyHtml}
-      <audio class="voice-audio-player" controls preload="none" src="${escapeHtml(audioUrl)}">
-        お使いのブラウザでは音声を再生できません。
-      </audio>
-      <p class="voice-audio-fallback" hidden>
-        この端末ではアプリ内再生ができない場合があります。下の「音声を開く」から再生してください。
+      <iframe
+        class="voice-drive-player"
+        src="${escapeHtml(previewUrl)}"
+        title="${escapeHtml(title)}の音声プレーヤー"
+        allow="autoplay"
+        loading="lazy"
+      ></iframe>
+      <p class="voice-player-note">
+        再生できない場合は、下の「音声を開く」からお聴きください。
       </p>
       <a class="voice-open-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
         音声を開く

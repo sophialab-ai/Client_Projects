@@ -412,13 +412,18 @@ h1 {
   justify-self: center;
 }
 
-.voice-audio-player {
+.voice-drive-player {
+  display: block;
   width: 100%;
   min-width: 0;
+  height: 180px;
   margin-top: 4px;
+  border: 0;
+  border-radius: 14px;
+  background: #f7f7f7;
 }
 
-.voice-audio-fallback {
+.voice-player-note {
   justify-self: stretch;
   margin: 2px 0 0;
   border-radius: 12px;
@@ -428,10 +433,6 @@ h1 {
   font-weight: 800;
   line-height: 1.5;
   background: #fff7f0;
-}
-
-.voice-audio-fallback[hidden] {
-  display: none;
 }
 
 .voice-open-link {
