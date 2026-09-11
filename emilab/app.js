@@ -13,6 +13,7 @@ const SHEET_CONTENT_CACHE_DURATION_MS = 120 * 1000;
 const SHEET_CONTENT_STUDENT_ID_KEY = "emiLaboSheetContentStudentId";
 const STUDENT_CLASS_FETCHED_KEY = "emiLaboStudentClassFetched";
 const STUDENT_ROLE_STORAGE_KEY = "emiLaboStudentRole";
+const TOKEN_STORAGE_KEY = "emiLaboToken";
 const READ_NOTICES_SIGNATURE_KEY = "emiLaboReadNoticesSignature";
 const HIDDEN_SCHEDULE_TITLES = ["カレンダーの表示権限がないため、その予定を表示できません"];
 
@@ -164,6 +165,13 @@ if (loginForm) {
         return;
       }
 
+      // GAS側がトークンを返した場合だけ保存します（未対応時も従来どおり動きます）。
+      if (result.token) {
+        sessionStorage.setItem(TOKEN_STORAGE_KEY, result.token);
+      } else {
+        sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+      }
+
       sessionStorage.setItem("emiLaboStudentId", result.user?.studentId || studentId);
       sessionStorage.setItem("emiLaboStudentName", result.user?.studentName || result.user?.name || "");
       sessionStorage.setItem("emiLaboStudentClass", result.user?.studentClass || result.user?.className || "");
@@ -202,6 +210,7 @@ document.addEventListener("click", (event) => {
 });
 
 function clearStoredLoginState() {
+  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
   sessionStorage.removeItem("emiLaboStudentId");
   sessionStorage.removeItem("emiLaboStudentName");
   sessionStorage.removeItem("emiLaboStudentClass");
