@@ -4,14 +4,10 @@ const CONFIG = {
   homePath: "./home.html",
 };
 
-const DEFAULT_TARGET_CLASS = "全クラス共通";
-const TEACHER_ROLE = "先生";
-const CLASS_FILTERED_DATA_KEYS = ["lessonVideos", "voiceLessons"];
 const SHEET_CONTENT_CACHE_KEY = "emiLaboSheetContent";
 const SHEET_CONTENT_FETCHED_AT_KEY = "emiLaboSheetContentFetchedAt";
 const SHEET_CONTENT_CACHE_DURATION_MS = 120 * 1000;
 const SHEET_CONTENT_STUDENT_ID_KEY = "emiLaboSheetContentStudentId";
-const STUDENT_CLASS_FETCHED_KEY = "emiLaboStudentClassFetched";
 const STUDENT_ROLE_STORAGE_KEY = "emiLaboStudentRole";
 const TOKEN_STORAGE_KEY = "emiLaboToken";
 const READ_NOTICES_SIGNATURE_KEY = "emiLaboReadNoticesSignature";
@@ -120,13 +116,40 @@ class AuthService {
   }
 }
 
+function getStoredToken() {
+  return String(sessionStorage.getItem(TOKEN_STORAGE_KEY) || "").trim();
+}
+
+let isRedirectingToLogin = false;
+
+function redirectToLogin() {
+  if (isRedirectingToLogin) {
+    return;
+  }
+
+  isRedirectingToLogin = true;
+  clearStoredLoginState();
+  window.location.href = "./index.html?relogin=1";
+}
+
+function showReloginMessage() {
+  if (!message) {
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("relogin") === "1") {
+    message.textContent = "セキュリティを強化しました。いつものIDとパスワードでもう一度ログインしてください。";
+  }
+}
+
 const authService = new AuthService(CONFIG);
 const loginForm = document.querySelector("#loginForm");
 const forgotPasswordLink = document.querySelector(".forgot-link");
 const passwordHelpMessage = document.querySelector("#passwordHelpMessage");
 const message = document.querySelector("#formMessage");
 let sheetContentPromise = null;
-let studentClassPromise = null;
 let teacherMessageTimer = null;
 let scheduleCalendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
@@ -177,7 +200,6 @@ if (loginForm) {
       sessionStorage.setItem("emiLaboStudentClass", result.user?.studentClass || result.user?.className || "");
       sessionStorage.setItem(STUDENT_ROLE_STORAGE_KEY, result.user?.studentRole || result.user?.role || "");
       sessionStorage.setItem("emiLaboUsageStatus", result.user?.usageStatus || "");
-      sessionStorage.removeItem(STUDENT_CLASS_FETCHED_KEY);
       sessionStorage.removeItem(SHEET_CONTENT_CACHE_KEY);
       sessionStorage.removeItem(SHEET_CONTENT_FETCHED_AT_KEY);
       sessionStorage.removeItem(SHEET_CONTENT_STUDENT_ID_KEY);
@@ -216,7 +238,6 @@ function clearStoredLoginState() {
   sessionStorage.removeItem("emiLaboStudentClass");
   sessionStorage.removeItem(STUDENT_ROLE_STORAGE_KEY);
   sessionStorage.removeItem("emiLaboUsageStatus");
-  sessionStorage.removeItem(STUDENT_CLASS_FETCHED_KEY);
   sessionStorage.removeItem(SHEET_CONTENT_CACHE_KEY);
   sessionStorage.removeItem(SHEET_CONTENT_FETCHED_AT_KEY);
   sessionStorage.removeItem(SHEET_CONTENT_STUDENT_ID_KEY);
@@ -234,14 +255,26 @@ function getGreetingByHour(hour) {
   return "こんばんは😊";
 }
 
-async function fetchSheetContent({ includeStudentClass = true } = {}) {
+async function fetchSheetContent() {
   if (!CONFIG.contentEndpoint) {
     throw new Error("GoogleスプレッドシートのURLが設定されていません。");
   }
 
-  const studentId = includeStudentClass ? getStoredStudentId() : "";
-  const requestUrl = buildContentRequestUrl(CONFIG.contentEndpoint, studentId);
-  const response = await fetch(requestUrl);
+  const token = getStoredToken();
+
+  if (!token) {
+    redirectToLogin();
+    throw new Error("もう一度ログインしてください。");
+  }
+
+  // トークンはURLに載せず、POSTの本文で送ります。
+  const response = await fetch(CONFIG.contentEndpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+    body: JSON.stringify({ action: "content", token: token }),
+  });
 
   if (!response.ok) {
     throw new Error("Googleスプレッドシートの内容を取得できませんでした。");
@@ -250,17 +283,16 @@ async function fetchSheetContent({ includeStudentClass = true } = {}) {
   const payload = await response.json();
 
   if (!payload.ok) {
+    if (payload.code === "LOGIN_REQUIRED") {
+      redirectToLogin();
+    }
+
     throw new Error(payload.message || "Googleスプレッドシートの内容を取得できませんでした。");
   }
 
   updateStoredStudentClass(payload);
   updateStoredStudentRole(payload);
-
-  if (includeStudentClass && studentId) {
-    sessionStorage.setItem(STUDENT_CLASS_FETCHED_KEY, "true");
-  }
-
-  saveSheetContent(payload, studentId);
+  saveSheetContent(payload, getStoredStudentId());
   return payload;
 }
 
@@ -302,6 +334,10 @@ async function getSheetContent() {
   if (!sheetContentPromise) {
     sheetContentPromise = fetchSheetContent()
       .catch((error) => {
+        if (isRedirectingToLogin) {
+          throw error;
+        }
+
         const storedContent = getStoredSheetContent();
 
         if (storedContent) {
@@ -316,35 +352,6 @@ async function getSheetContent() {
   }
 
   return sheetContentPromise;
-}
-
-async function ensureStudentClass() {
-  const storedStudentClass = getStoredStudentClass();
-
-  if (storedStudentClass) {
-    return storedStudentClass;
-  }
-
-  if (!getStoredStudentId()) {
-    return "";
-  }
-
-  if (sessionStorage.getItem(STUDENT_CLASS_FETCHED_KEY) === "true") {
-    return "";
-  }
-
-  if (!studentClassPromise) {
-    studentClassPromise = fetchSheetContent({ includeStudentClass: true })
-      .then((payload) => {
-        return getStoredStudentClass();
-      })
-      .catch((error) => {
-        studentClassPromise = null;
-        throw error;
-      });
-  }
-
-  return studentClassPromise;
 }
 
 function getFirstAvailableValue(row, keys) {
@@ -363,30 +370,8 @@ function getFirstAvailableValue(row, keys) {
   return "";
 }
 
-function buildContentRequestUrl(endpoint, studentId) {
-  if (!studentId) {
-    return endpoint;
-  }
-
-  // GAS側で生徒マスターの「所属クラス」を判定できるよう、生徒IDだけを付与します。
-  const separator = endpoint.indexOf("?") === -1 ? "?" : "&";
-  return `${endpoint}${separator}studentId=${encodeURIComponent(studentId)}`;
-}
-
 function getStoredStudentId() {
   return String(sessionStorage.getItem("emiLaboStudentId") || "").trim();
-}
-
-function getStoredStudentClass() {
-  return String(sessionStorage.getItem("emiLaboStudentClass") || "").trim();
-}
-
-function getStoredStudentRole() {
-  return String(sessionStorage.getItem(STUDENT_ROLE_STORAGE_KEY) || "").trim();
-}
-
-function isTeacherAccount() {
-  return getStoredStudentRole() === TEACHER_ROLE;
 }
 
 function updateStoredStudentClass(payload) {
@@ -403,39 +388,6 @@ function updateStoredStudentRole(payload) {
   if (studentRole) {
     sessionStorage.setItem(STUDENT_ROLE_STORAGE_KEY, studentRole);
   }
-}
-
-function normalizeTargetClass(row) {
-  // 旧データや列未設定の行で既存表示が急に消えないよう、未指定は全クラス共通扱いにします。
-  return String(row?.targetClass || row?.["対象クラス"] || DEFAULT_TARGET_CLASS).trim() || DEFAULT_TARGET_CLASS;
-}
-
-function shouldShowClassTargetedRow(row, studentClass, isTeacher = false) {
-  if (isTeacher) {
-    return true;
-  }
-
-  const targetClass = normalizeTargetClass(row);
-
-  if (targetClass === DEFAULT_TARGET_CLASS) {
-    return true;
-  }
-
-  if (!studentClass) {
-    return false;
-  }
-
-  return targetClass === studentClass;
-}
-
-function filterRowsByRoute(rows, route) {
-  if (!CLASS_FILTERED_DATA_KEYS.includes(route.dataKey)) {
-    return rows;
-  }
-
-  // レッスン動画・ボイスレッスンだけ、対象クラスで表示を絞ります。
-  const studentClass = getStoredStudentClass();
-  return rows.filter((row) => shouldShowClassTargetedRow(row, studentClass, isTeacherAccount()));
 }
 
 function getTeacherMessageFromSheet(payload) {
@@ -873,9 +825,6 @@ async function renderContentRoute() {
 
   try {
     const payload = await getSheetContent();
-    if (CLASS_FILTERED_DATA_KEYS.includes(route.dataKey)) {
-      await ensureStudentClass();
-    }
 
     if (route.dataKey === "schedules" && payload?.data?.scheduleError) {
       contentList.innerHTML = `<div class="menu-card" role="status"><span class="menu-title">${escapeHtml(payload.data.scheduleError)}</span></div>`;
@@ -887,8 +836,9 @@ async function renderContentRoute() {
       renderHomeMenu(document.querySelector("#homeMenu"), payload);
     }
 
+    // 対象クラスによる絞り込みはGAS側で完了しています。
     const sourceRows = payload?.data?.[route.dataKey] || [];
-    let rows = Array.isArray(sourceRows) ? filterRowsByRoute(sourceRows, route) : [];
+    const rows = Array.isArray(sourceRows) ? sourceRows : [];
 
     if (route.dataKey === "schedules") {
       contentList.innerHTML = buildScheduleCalendar(rows, route);
@@ -939,6 +889,7 @@ async function initializeHome() {
   }
 }
 
+showReloginMessage();
 initializeHome();
 
 window.addEventListener("hashchange", renderContentRoute);

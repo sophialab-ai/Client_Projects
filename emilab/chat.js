@@ -11,16 +11,34 @@ const chatBody = document.querySelector("#chatBody");
 const chatMessage = document.querySelector("#chatMessage");
 const chatTimeline = document.querySelector("#chatTimeline");
 
-function getStoredStudentId() {
-  return String(sessionStorage.getItem("emiLaboStudentId") || "").trim();
+const TOKEN_STORAGE_KEY = "emiLaboToken";
+
+function getStoredToken() {
+  return String(sessionStorage.getItem(TOKEN_STORAGE_KEY) || "").trim();
 }
 
-function getStoredStudentName() {
-  return String(sessionStorage.getItem("emiLaboStudentName") || "").trim();
+let isRedirectingToLogin = false;
+
+function clearStoredLoginState() {
+  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+  sessionStorage.removeItem("emiLaboStudentId");
+  sessionStorage.removeItem("emiLaboStudentName");
+  sessionStorage.removeItem("emiLaboStudentClass");
+  sessionStorage.removeItem("emiLaboStudentRole");
+  sessionStorage.removeItem("emiLaboUsageStatus");
+  sessionStorage.removeItem("emiLaboSheetContent");
+  sessionStorage.removeItem("emiLaboSheetContentFetchedAt");
+  sessionStorage.removeItem("emiLaboSheetContentStudentId");
 }
 
-function getStoredStudentRole() {
-  return String(sessionStorage.getItem("emiLaboStudentRole") || "").trim();
+function redirectToLogin() {
+  if (isRedirectingToLogin) {
+    return;
+  }
+
+  isRedirectingToLogin = true;
+  clearStoredLoginState();
+  window.location.href = "./index.html?relogin=1";
 }
 
 function escapeHtml(value) {
@@ -32,43 +50,40 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-function buildRequestUrl(action) {
-  const url = new URL(CHAT_CONFIG.endpoint);
-  const studentId = getStoredStudentId();
-
-  url.searchParams.set("action", action);
-
-  if (studentId) {
-    url.searchParams.set("studentId", studentId);
-  }
-
-  return url.toString();
-}
-
 async function requestChatList() {
-  const response = await fetch(buildRequestUrl("chatList"));
-
-  if (!response.ok) {
-    throw new Error("チャットを取得できませんでした。");
-  }
-
-  return response.json();
+  return postChatAction({ action: "chatList" }, "チャットを取得できませんでした。");
 }
 
-async function postChatAction(payload) {
+async function postChatAction(payload, errorMessage) {
+  const token = getStoredToken();
+
+  if (!token) {
+    redirectToLogin();
+    throw new Error("もう一度ログインしてください。");
+  }
+
+  // トークンはURLに載せず、POSTの本文で送ります。
+  const requestPayload = Object.assign({}, payload, { token: token });
   const response = await fetch(CHAT_CONFIG.endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "text/plain;charset=utf-8",
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(requestPayload),
   });
 
   if (!response.ok) {
-    throw new Error("チャットを更新できませんでした。");
+    throw new Error(errorMessage || "チャットを更新できませんでした。");
   }
 
-  return response.json();
+  const result = await response.json();
+
+  if (!result.ok && result.code === "LOGIN_REQUIRED") {
+    redirectToLogin();
+    throw new Error(result.message || "もう一度ログインしてください。");
+  }
+
+  return result;
 }
 
 function formatChatDate(value) {
@@ -160,7 +175,7 @@ async function loadChat() {
     return;
   }
 
-  if (!getStoredStudentId()) {
+  if (!getStoredToken()) {
     chatTimeline.innerHTML = '<div class="chat-empty-card" role="status">ログイン後にチャットをご利用いただけます。</div>';
     return;
   }
@@ -174,6 +189,10 @@ async function loadChat() {
 
     renderChat(payload);
   } catch (error) {
+    if (isRedirectingToLogin) {
+      return;
+    }
+
     chatTimeline.innerHTML = '<div class="chat-empty-card" role="status">チャットを表示できませんでした。時間をおいて再度お試しください。</div>';
   }
 }
@@ -182,13 +201,12 @@ if (chatForm) {
   chatForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const studentId = getStoredStudentId();
     const body = String(chatBody.value || "").trim();
     const submitButton = chatForm.querySelector(".chat-submit-button");
 
     chatMessage.textContent = "";
 
-    if (!studentId) {
+    if (!getStoredToken()) {
       chatMessage.textContent = "ログイン後に投稿できます。";
       return;
     }
@@ -203,11 +221,8 @@ if (chatForm) {
     try {
       const payload = await postChatAction({
         action: "chatAdd",
-        studentId: studentId,
-        studentName: getStoredStudentName(),
-        role: getStoredStudentRole(),
         body: body,
-      });
+      }, "投稿できませんでした。");
 
       if (!payload.ok) {
         throw new Error(payload.message || "投稿できませんでした。");
@@ -250,9 +265,8 @@ if (chatTimeline) {
     try {
       const payload = await postChatAction({
         action: "chatDelete",
-        studentId: getStoredStudentId(),
         postId: postId,
-      });
+      }, "削除できませんでした。");
 
       if (!payload.ok) {
         throw new Error(payload.message || "削除できませんでした。");
