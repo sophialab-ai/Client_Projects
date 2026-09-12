@@ -85,15 +85,14 @@ class AuthService {
       };
     }
 
-    if (this.config.spreadsheetEndpoint) {
-      return this.loginWithSpreadsheet({ studentId, password });
+    if (!this.config.spreadsheetEndpoint) {
+      return {
+        ok: false,
+        message: "ログインできませんでした。時間をおいてもう一度お試しください。",
+      };
     }
 
-    return {
-      ok: true,
-      message: "ログインしました。",
-      user: { studentId },
-    };
+    return this.loginWithSpreadsheet({ studentId, password });
   }
 
   async loginWithSpreadsheet(credentials) {
